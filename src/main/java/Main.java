@@ -19,6 +19,9 @@ public class Main {
                                 .addExactPath("/test",
                                         Handlers.routing()
                                                 .get("/", new Test()))
+                                .addExactPath("/login",
+                                        Handlers.routing()
+                                                .get("/", new LogIn()))
                 )
 
                 .build();
