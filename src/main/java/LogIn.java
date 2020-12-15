@@ -1,12 +1,20 @@
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSourcesFactory;
+import org.apache.poi.xddf.usermodel.chart.XDDFNumericalDataSource;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFChart;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.util.List;
 
@@ -14,7 +22,7 @@ public class LogIn implements HttpHandler {
     CookieManager cookieManager;
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws IOException {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
 
         cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
@@ -67,10 +75,21 @@ public class LogIn implements HttpHandler {
         }
 
         int total_sources = getPostsSources();
-        int total_publication = getPostsInfo();
-        int total_comment = getCommentInfo();
+        JSONObject jsonPosts = getPostsInfo();
+        JSONArray jsonArray;
+        int total_publication = 0;
+        for(Object o: (JSONArray)(jsonPosts).get("total")){
+            jsonArray = (JSONArray) o;
+            total_publication += (int) jsonArray.get(1);
+        }
+        int total_comment = 0;
+        JSONObject jsonComments = getCommentInfo();
+        for(Object o: (JSONArray)(jsonComments).get("total")){
+            jsonArray = (JSONArray) o;
+            total_comment += (int) jsonArray.get(1);
+        }
         DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment);
-        WordWorker.createDoc("«Гусев Олег Александрович»" , "1 июля - 31 июля 2020 года", data);
+        WordWorker.createDoc("«Гусев Олег Александрович»" , "1 июля - 31 июля 2020 года", data, jsonPosts, jsonComments);
 
         exchange.getResponseSender().send("OK");
     }
@@ -96,7 +115,7 @@ public class LogIn implements HttpHandler {
         return res;
     }
 
-    private Integer getCommentInfo()throws IOException {
+    private JSONObject getCommentInfo()throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/commentTrustDaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -119,17 +138,10 @@ public class LogIn implements HttpHandler {
             }
             res += response.toString();
         }
-        int total = 0;
-        JSONObject jsonObjects = new JSONObject(res);
-        JSONArray jsonArray;
-        for(Object o: (JSONArray)((JSONObject)jsonObjects.get("total")).get("total")){
-            jsonArray = (JSONArray) o;
-            total += (int) jsonArray.get(1);
-        }
-        return total;
+        return (JSONObject)(new JSONObject(res)).get("total");
     }
 
-    private Integer getPostsInfo()throws IOException {
+    private JSONObject getPostsInfo()throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/trustdaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -152,14 +164,14 @@ public class LogIn implements HttpHandler {
             }
             res += response.toString();
         }
-        int total = 0;
         JSONObject jsonObjects = new JSONObject(res);
-        JSONArray jsonArray;
-        for(Object o: (JSONArray)((JSONObject)jsonObjects.get("total")).get("total")){
-            jsonArray = (JSONArray) o;
-            total += (int) jsonArray.get(1);
-        }
-        return total;
+//        JSONArray jsonArray;
+        return (JSONObject)jsonObjects.get("total");
+//        for(Object o: (JSONArray)((JSONObject)jsonObjects.get("total")).get("total")){
+//            jsonArray = (JSONArray) o;
+//            total += (int) jsonArray.get(1);
+//        }
+//        return total;
     }
     private Integer getPostsSources() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/thread/allmembers");
@@ -193,4 +205,5 @@ public class LogIn implements HttpHandler {
         }
         return total;
     }
+
 }
