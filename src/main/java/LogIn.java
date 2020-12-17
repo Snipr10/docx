@@ -122,7 +122,7 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2010-01-01\", \"to\": \"2020-12-20\"}";
+        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2020-11-20\", \"to\": \"2020-12-20\"}";
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);
@@ -148,7 +148,7 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2010-01-01\", \"to\": \"2020-12-20\"}";
+        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2020-11-20\", \"to\": \"2020-12-20\"}";
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);
@@ -180,7 +180,7 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2010-01-01\", \"to\": \"2020-12-20\", \"sources_only\": \"true\"}";
+        String jsonInputString = "{\"thread_id\": \"995\", \"from\": \"2020-11-20\", \"to\": \"2020-12-20\", \"sources_only\": \"true\"}";
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);

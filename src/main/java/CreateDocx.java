@@ -17,10 +17,12 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 class WordWorker {
 
@@ -214,10 +216,51 @@ class WordWorker {
             }
             docxModel = addChats(docxModel, categoriesPost, postCommentData);
 
-
             addPie(docxModel,  new Double[]{(double) getComment(jsonComments, "netural"),
                     (double) getComment(jsonComments, "positive"), (double) getComment(jsonComments, "negative")});
 
+            String[] categoriesPostType= new String[]{};
+            Double[] valuesNegative = new Double[]{};
+            Double[] valuesPositive = new Double[]{};
+            Double[] valuesNetural = new Double[]{};
+            JSONArray positive = (JSONArray) (jsonComments).get("positive");
+            JSONArray netural = (JSONArray) (jsonComments).get("netural");
+            JSONArray negative = (JSONArray) (jsonComments).get("negative");
+            double positiveInt;
+            double neturalInt;
+            double negativeInt;
+            double sum;
+            JSONArray totalComments = ((JSONArray) (jsonComments).get("total"));
+            for (int i =0; i<totalComments.length(); i++) {
+//            for (int i =0; i<31; i++) {
+
+            negativeInt = new Double (((JSONArray) negative.get(i)).get(1).toString());
+                positiveInt = new Double (((JSONArray) positive.get(i)).get(1).toString());
+                neturalInt = new Double (((JSONArray) netural.get(i)).get(1).toString());
+                sum = negativeInt + neturalInt + positiveInt;
+                categoriesPostType = append(categoriesPostType, (String)((JSONArray) negative.get(i)).get(0));
+
+                if (sum == 0) {
+                    valuesNegative = append(valuesNegative, 0.33d);
+                    // 033
+                    valuesPositive = append(valuesPositive, 0.33d);
+                    // 033
+                    valuesNetural = append(valuesNetural, 0.33d);
+
+                }
+                else{
+                    valuesNegative = append(valuesNegative, negativeInt/sum);
+                    // 033
+                    valuesPositive = append(valuesPositive, positiveInt/sum);
+                    // 033
+                    valuesNetural = append(valuesNetural, neturalInt/sum);
+                }
+
+            }
+            addArea(docxModel, categoriesPostType,
+                     valuesNegative,
+                     valuesPositive,
+                     valuesNetural);
             // сохраняем модель docx документа в файл
             try (FileOutputStream fileOut = new FileOutputStream("/home/oleg/Documents/test1t.docx")) {
                 docxModel.write(fileOut);
@@ -329,7 +372,12 @@ class WordWorker {
         XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
         XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesA, valuesDataRangeA, 1);
 
-
+        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
+        // Else first and last category is exactly on cross points and the bars are only half visible.
+//        Method andPrivateMethod
+//                = XDDFDoughnutChartData.class.XDDFDoughnutChartData(
+//                "privateAnd", boolean.class, boolean.class);
+//        new XDDFDoughnutChartData(1, null);
         XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
         XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
         data.setVaryColors(true);
@@ -354,4 +402,105 @@ class WordWorker {
         legend.setOverlay(true);
         return document;
     }
+
+
+    private static XWPFDocument addArea(XWPFDocument document, String[] categories,
+    Double[] valuesNegative,
+    Double[] valuesPositive,
+    Double[] valuesNetural) throws IOException, InvalidFormatException {
+        XWPFChart chart = document.createChart(15 * Units.EMU_PER_CENTIMETER, 10 * Units.EMU_PER_CENTIMETER);
+        // create data sources
+        int numOfPoints = categories.length;
+        String categoryDataRange = chart.formatRange(new CellRangeAddress(1, numOfPoints, 0, 0));
+        String valuesDataRangeA = chart.formatRange(new CellRangeAddress(1, numOfPoints, 1, 1));
+        String valuesDataRangeB = chart.formatRange(new CellRangeAddress(1, numOfPoints, 2, 2));
+        String valuesDataRangeC = chart.formatRange(new CellRangeAddress(1, numOfPoints, 3, 3));
+
+        XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
+        XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesNegative, valuesDataRangeA, 1);
+        XDDFNumericalDataSource<Double> valuesDataB = XDDFDataSourcesFactory.fromArray(valuesPositive, valuesDataRangeB, 2);
+        XDDFNumericalDataSource<Double> valuesDataC = XDDFDataSourcesFactory.fromArray(valuesNetural, valuesDataRangeC, 3);
+
+
+
+//             Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
+//             Else first and last category is exactly on cross points and the bars are only half visible.
+        // axis must be there but must not be visible
+//        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+//        bottomAxis.setVisible(false);
+//        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+//        leftAxis.setVisible(false);
+//
+//        // set correct cross axis
+//        bottomAxis.crossAxis(leftAxis);
+//        leftAxis.crossAxis(bottomAxis);
+//        chart.deleteShapeProperties();
+//        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+
+
+        // create axis
+        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+        leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
+        // Else first and last category is exactly on cross points and the bars are only half visible.
+        leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
+
+        // create chart data
+        XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+        ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+        ((XDDFBarChartData) data).setBarGrouping(BarGrouping.STACKED);
+
+        chart.getCTChart().getPlotArea().getBarChartArray(0).addNewOverlap().setVal((byte)100);
+
+//            XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
+//
+//            data.setVaryColors(true);
+//            series.setShowLeaderLines(fXDDFBarChartDatalse);
+//            series.setTitle("", chart.setSheetTitle("", 1));
+//            series = data.addSeries(categoriesData, valuesDataB);
+//            series.setShowLeaderLines(false);
+//            series.setTitle("", chart.setSheetTitle("", 2));
+        XDDFChartData.Series series1 = data.addSeries(categoriesData, valuesDataA);
+        series1.setTitle("Negative", null);
+        XDDFChartData.Series series2 = data.addSeries(categoriesData, valuesDataB);
+        series2.setTitle("Positive", null);
+        XDDFChartData.Series series3 = data.addSeries(categoriesData, valuesDataC);
+        series3.setTitle("Netural", null);
+//
+//        for (int s = 0 ; s < 3; s++) {
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).addNewDLbls();
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).getDLbls()
+//                    .addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.CTR);
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).getDLbls().addNewShowVal().setVal(true);
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).getDLbls().addNewShowLegendKey().setVal(false);
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).getDLbls().addNewShowCatName().setVal(false);
+//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(s).getDLbls().addNewShowSerName().setVal(false);
+//        }
+
+
+
+
+
+        data.setVaryColors(true);
+//            chart.getCTChart().getPlotArea().getAreaChartArray(0).addNewAxId().getVal().setVal((byte) 100);
+//            chart.getCTChart().getPlotArea().getAreaChartArray(0).addNewSer().addNewVal();
+//            CTDLbls dLbls = chart.getCTChart().getPlotArea().addNewPieChart().addNewDLbls();
+//            dLbls.addNewShowBubbleSize().setVal(true);
+//            dLbls.addNewShowLegendKey().setVal(true);
+//            dLbls.addNewShowCatName().setVal(true);
+//            dLbls.addNewShowSerName().setVal(true);
+//            dLbls.addNewShowPercent().setVal(true);
+//            dLbls.addNewShowVal().setVal(true);
+//            dLbls.addNewDLblPos(Dlc)
+        chart.plot(data);
+
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.RIGHT);
+        legend.setOverlay(true);
+        return document;
+    }
+
+
+
 }
