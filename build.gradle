@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.json/json
+    compile group: 'org.json', name: 'json', version: '20090211'
+
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
     compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '4.1.2'
     compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
@@ -21,7 +24,15 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     compile group: 'org.json', name: 'json', version: '20180813'
     compile group: 'io.undertow', name: 'undertow-core', version: '2.0.22.Final'
+// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-zuul
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-zuul', version: '2.2.6.RELEASE'
+// https://mvnrepository.com/artifact/com.marcosbarbero.cloud/spring-cloud-zuul-ratelimit
+    compile group: 'com.marcosbarbero.cloud', name: 'spring-cloud-zuul-ratelimit', version: '2.4.2.RELEASE'
 
+    compile group: 'org.apache.poi', name: 'openxml4j', version: '1.0-beta'
+    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '4.1.2'
+// https://mvnrepository.com/artifact/org.apache.poi/ooxml-schemas
+    compile group: 'org.apache.poi', name: 'ooxml-schemas', version: '1.3'
 
 }
 
