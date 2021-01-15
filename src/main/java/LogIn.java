@@ -1,6 +1,7 @@
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
 import org.apache.poi.xwpf.usermodel.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -146,7 +147,10 @@ public class LogIn implements HttpHandler {
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/octet-stream");
         exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
-
+        exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
+                "GET, POST, PUT, DELETE, OPTIONS");
+        exchange.getResponseHeaders()
+                .put(new HttpString("Access-Control-Allow-Origin"), "*");
         final File file = new File(name);
         final OutputStream outputStream = exchange.getOutputStream();
         final InputStream inputStream = new FileInputStream(file);
