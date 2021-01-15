@@ -166,6 +166,8 @@ public class LogIn implements HttpHandler {
         final OutputStream outputStream = exchange.getOutputStream();
         final InputStream inputStream = new FileInputStream(file);
         int length = inputStream.available();
+        exchange.getResponseHeaders()
+                .put(new HttpString("Content-Length"), length);
         byte[] buf = new byte[8192];
         int c;
         while ((c = inputStream.read(buf, 0, buf.length)) > 0) {
