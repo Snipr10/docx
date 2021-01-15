@@ -145,7 +145,7 @@ public class LogIn implements HttpHandler {
             }
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/octet-stream");
-        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "inline; filename=\"" + name);
+        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name);
 
         final File file = new File(name);
         final OutputStream outputStream = exchange.getOutputStream();
