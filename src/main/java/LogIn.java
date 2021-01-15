@@ -144,21 +144,35 @@ public class LogIn implements HttpHandler {
             docx.write(fileOut);
             }
 
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/octet-stream");
-        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+//        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
         exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
                 "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders()
                 .put(new HttpString("Access-Control-Allow-Origin"), "*");
+        exchange.getResponseHeaders()
+                .put(new HttpString("Content-Description"), "File Transfer");
+
+        exchange.getResponseHeaders()
+                .put(new HttpString("Content-Transfer-Encoding"), "binary");
+
+
+
+
+        exchange.getResponseHeaders()
+                .put(new HttpString("Pragma"), "public");
         final File file = new File(name);
         final OutputStream outputStream = exchange.getOutputStream();
         final InputStream inputStream = new FileInputStream(file);
+        int length = inputStream.available();
         byte[] buf = new byte[8192];
         int c;
         while ((c = inputStream.read(buf, 0, buf.length)) > 0) {
             outputStream.write(buf, 0, c);
             outputStream.flush();
         }
+
 
         outputStream.close();
         inputStream.close();
