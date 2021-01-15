@@ -19,7 +19,6 @@ public class LogIn implements HttpHandler {
     String thread_id;
     String type;
 
-    @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (exchange.isInIoThread()) {
             exchange.dispatch(this);
