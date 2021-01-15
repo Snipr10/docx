@@ -146,7 +146,7 @@ public class LogIn implements HttpHandler {
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-//        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
+        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
         exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
                 "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders()
