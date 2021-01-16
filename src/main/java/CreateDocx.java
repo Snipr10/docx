@@ -8,6 +8,7 @@ import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
@@ -628,10 +629,10 @@ class WordWorker {
 
             JSONObject ageJson= (JSONObject) ((JSONObject)age.get("additional_data")).get("age");
             addPie(docxModel, new String[]{"18-25 лет","26-40 лет","40 лет и старше", "не указан"},
-                    new Double[]{new Double(ageJson.get("18-25").toString()),
-                            new Double(ageJson.get("26-40").toString()),
-                            new Double(ageJson.get("40+").toString()),
-                            new Double(ageJson.get("u").toString())
+                    new Double[]{new Double(getOrNone(ageJson, "18-25")),
+                            new Double(getOrNone(ageJson, "26-40")),
+                            new Double(getOrNone(ageJson, "40+")),
+                            new Double(getOrNone(ageJson, "u"))
                     });
 
             XWPFParagraph paragraphCity= docxModel.createParagraph();
@@ -1447,4 +1448,17 @@ class WordWorker {
         style.setType(STStyleType.PARAGRAPH);
         styles.addStyle(style);
     }
+
+ private static String getOrNone(JSONObject j, String key) {
+        try {
+            String res = j.get(key).toString();
+            if (res.equals("null")) {
+                return "0";
+            }
+            return res;
+        } catch (JSONException e){
+            return "0";
+        }
+ }
+
 }
