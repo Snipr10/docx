@@ -121,19 +121,19 @@ class WordWorker {
             paragraphConfigDate.addBreak();
 
 
-            CTP ctpFooterModel = createFooterModel(
-                    "На базе данных программного обеспечения собственной разработки ООО «SNIPR»");
+//            CTP ctpFooterModel = createFooterModel(
+//                    "На базе данных программного обеспечения собственной разработки ООО «SNIPR»");
 
-            CTSectPr sectPrFirst = docxModel.getDocument().getBody().addNewSectPr();
+//            CTSectPr sectPrFirst = docxModel.getDocument().getBody().addNewSectPr();
 
-            XWPFHeaderFooterPolicy headerFooterPolicyFirst = new XWPFHeaderFooterPolicy(docxModel, sectPrFirst);
-            XWPFParagraph footerParagraph = new XWPFParagraph(ctpFooterModel, docxModel);
-            XWPFRun runFirstFooter = footerParagraph.createRun();
-            runFirstFooter.setBold(true);
-            headerFooterPolicyFirst.createFooter(
-                    XWPFHeaderFooterPolicy.FIRST,
-                    new XWPFParagraph[]{footerParagraph}
-            );
+//            XWPFHeaderFooterPolicy headerFooterPolicyFirst = new XWPFHeaderFooterPolicy(docxModel, sectPrFirst);
+//            XWPFParagraph footerParagraph = new XWPFParagraph(ctpFooterModel, docxModel);
+//            XWPFRun runFirstFooter = footerParagraph.createRun();
+//            runFirstFooter.setBold(true);
+//            headerFooterPolicyFirst.createFooter(
+//                    XWPFHeaderFooterPolicy.FIRST,
+//                    new XWPFParagraph[]{footerParagraph}
+//            );
 
 
             XWPFParagraph paragraph = docxModel.createParagraph();
