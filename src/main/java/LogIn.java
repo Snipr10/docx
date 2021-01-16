@@ -132,7 +132,7 @@ public class LogIn implements HttpHandler {
         JSONArray posts = getPosts();
         JSONObject stat = getStats();
         JSONObject sex = getStats("sex");
-        JSONObject age = getStats("age");
+        JSONObject age = getAge();
         JSONArray jsonCity = getCity();
         JSONObject usersJson = getUsers();
 
@@ -419,6 +419,37 @@ public class LogIn implements HttpHandler {
 
     }
 
+    private JSONObject getAge()throws IOException {
+        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/ages");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json; utf-8");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setDoOutput(true);
+        String jsonInputString = String.format(
+
+        "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"group1_start\":\"18\",\"group1_end\":\"25\",\"group2_start\":\"25\",\"group2_end\":\"40\",\"group3_start\":\"40\",\"group3_end\":\"200\",\"group4_start\":\"0\",\"group4_end\":\"0\"}",
+                thread_id, dateFrom, dateTo);
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+            os.flush();
+        }
+        String res = "";
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            res += response.toString();
+        }
+
+        return (JSONObject)((JSONObject)new JSONObject(res).get("additional_data")).get("age");
+
+    }
 
     private JSONArray getPosts()throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/owners_top");

@@ -625,14 +625,11 @@ class WordWorker {
                     "Диаграмма 9 Распределение аудитории по возрасту"
             );
 
-
-
-            JSONObject ageJson= (JSONObject) ((JSONObject)age.get("additional_data")).get("age");
             addPie(docxModel, new String[]{"18-25 лет","26-40 лет","40 лет и старше", "не указан"},
-                    new Double[]{new Double(getOrNone(ageJson, "18-25")),
-                            new Double(getOrNone(ageJson, "26-40")),
-                            new Double(getOrNone(ageJson, "40+")),
-                            new Double(getOrNone(ageJson, "u"))
+                    new Double[]{new Double(((JSONObject)age.get("group1")).get("graph").toString()),
+                            new Double(((JSONObject)age.get("group2")).get("graph").toString()),
+                            new Double(((JSONObject)age.get("group3")).get("graph").toString()),
+                            new Double(((JSONObject)age.get("group4")).get("graph").toString())
                     });
 
             XWPFParagraph paragraphCity= docxModel.createParagraph();
