@@ -45,7 +45,8 @@ class WordWorker {
     public static XWPFDocument createDoc(String type, String name, String date,
                                  DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat,
                                  JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts,
-                                 JSONArray postsContent,JSONArray commentContent) {
+                                 JSONArray postsContent,JSONArray commentContent, int first_month, int first_year
+                                         ) {
         int users =  Integer.parseInt(usersJson.get("count").toString());
         try {
             XWPFDocument docxModel = new XWPFDocument();
@@ -210,7 +211,7 @@ class WordWorker {
             );
 
 
-            ParseData postData = getWeekData(type, (JSONArray) ((JSONObject)jsonPosts.get("total")).get("total"));
+            ParseData postData = getWeekData(type, (JSONArray) ((JSONObject)jsonPosts.get("total")).get("total"), first_month, first_year);
             docxModel = addChats(docxModel, postData.categories, postData.valuesA);
 
 
@@ -227,7 +228,7 @@ class WordWorker {
             );
 
 
-            ParseData comments = getWeekData(type, (JSONArray) (jsonComments).get("total"));
+            ParseData comments = getWeekData(type, (JSONArray) (jsonComments).get("total"), first_month, first_year);
             addChats(docxModel, comments.categories, comments.valuesA);
             String postDate;
 
@@ -302,6 +303,7 @@ class WordWorker {
             Double[] valuesNegative = new Double[]{};
             Double[] valuesPositive = new Double[]{};
             Double[] valuesNetural = new Double[]{};
+
             JSONArray positive = (JSONArray) (jsonComments).get("positive");
             JSONArray netural = (JSONArray) (jsonComments).get("netural");
             JSONArray negative = (JSONArray) (jsonComments).get("negative");
@@ -338,7 +340,7 @@ class WordWorker {
 
                 }
             }
-            else{
+            else {
 
                 boolean isContain;
                 long circe = 1;
@@ -347,9 +349,11 @@ class WordWorker {
                 if (type.equals("week")) {
                     circeM = 100;
                 } else {
-                    circeM = 10;
+                    if (type.equals("month")) {
+                        circeM = 100;
+                    } else{
+                    circeM = 10; }
                 }
-
 
 
                     for (int i = 0; i < totalComments.length(); i++) {
@@ -398,7 +402,7 @@ class WordWorker {
                                     (double) Math.round((valuesNetural[j] / sum) * 100.0);
                         }
                     }
-                changeWeekString(categoriesPostType, type);
+                changeWeekString(categoriesPostType, type, first_month, first_year);
             }
 
             addArea(docxModel, categoriesPostType,
@@ -512,7 +516,7 @@ class WordWorker {
             );
 
 
-            ParseData soData = getWeekDataMedia(type, jsonPosts);
+            ParseData soData = getWeekDataMedia(type, jsonPosts, first_month, first_year);
             addDоubleChats(docxModel, soData.categories, soData.valuesA, soData.valuesB );
 
             XWPFParagraph paragraphTop10Own = docxModel.createParagraph();
@@ -591,7 +595,7 @@ class WordWorker {
             );
 
 
-            ParseData auditData = getWeekData(type, (JSONArray) (stat).get("graph_data"));
+            ParseData auditData = getWeekData(type, (JSONArray) (stat).get("graph_data"), first_month, first_year);
             addChats(docxModel, auditData.categories, auditData.valuesA);
 
 
@@ -1249,7 +1253,7 @@ class WordWorker {
     }
 
 
-    private static ParseData getWeekData(String type, JSONArray jsonTotal) throws ParseException {
+    private static ParseData getWeekData(String type, JSONArray jsonTotal, int first_month, int first_year) throws ParseException {
         String[] categoriesPost = new String[]{};
         Double[] valuesAPost = new Double[]{};
         JSONArray jsonArray;
@@ -1267,8 +1271,12 @@ class WordWorker {
             if (type.equals("week")) {
                 circeM = 100;
             } else {
-                circeM = 10;
+                if (type.equals("month")) {
+                    circeM = 100;
+                } else{
+                    circeM = 10; }
             }
+
             for (Object o : jsonTotal) {
                 jsonArray = (JSONArray) o;
 
@@ -1293,14 +1301,14 @@ class WordWorker {
                 }
                 lastDate = dateInt;
             }
-            changeWeekString(categoriesPost, type);
+            changeWeekString(categoriesPost, type, first_month, first_year);
 
 
         }
         return new ParseData(categoriesPost, valuesAPost);
     }
 
-    private static ParseData getWeekDataMedia(String type, JSONObject jsonPosts) throws ParseException {
+    private static ParseData getWeekDataMedia(String type, JSONObject jsonPosts, int first_month, int first_year) throws ParseException {
         String[] categoriesSoMedia = new String[]{};
             Double[] valuesSo = new Double[]{};
             Double[] valuesMedia = new Double[]{};
@@ -1331,10 +1339,14 @@ class WordWorker {
             if (type.equals("week")) {
                 circeM = 100;
             } else {
-                circeM = 10;
+                if (type.equals("month")) {
+                    circeM = 100;
+                } else{
+                    circeM = 10; }
             }
 
-                for (int i = 0; i < Gs.length(); i++) {
+
+            for (int i = 0; i < Gs.length(); i++) {
                     int dateInt = getDate((String) ((JSONArray) Gs.get(i)).get(0), type);
                     if (lastDate != 1 && dateInt == 1 && categoriesSoMedia.length > 0) {
                         circe = circe * circeM;
@@ -1365,7 +1377,7 @@ class WordWorker {
                     }
                     lastDate = dateInt;
                 }
-                changeWeekString(categoriesSoMedia, type);
+                changeWeekString(categoriesSoMedia, type, first_month, first_year);
 
 
         }
@@ -1379,20 +1391,40 @@ class WordWorker {
         if (type.equals("week")){
             res = cal.get(Calendar.WEEK_OF_YEAR);
         } else {
-            res = cal.get(Calendar.MONTH)/ 3 + 1;
+            if (type.equals("month")){
+                res = cal.get(Calendar.MONTH);
+            } else {
+                res = cal.get(Calendar.MONTH) / 3 + 1;
+            }
         }
         return res;
     }
-    private static String[] changeWeekString(String[] categories, String type){
+    private static String[] changeWeekString(String[] categories, String type, int first_month, int first_year){
         String dateType;
         if (type.equals("week")) {
             dateType = " неделя";
-        } else
-            dateType = " квартал";
+        }
+        else
+        {
+            if (type.equals("month")) {
+                dateType = "месяц";
+            }
+            else {
+                dateType = " квартал";
+            }
+        }
 
+        if (dateType.equals("месяц")) {
+            int i = 0;
+            String[] monthNames = { "январь ", "февраль ", "март ", "апрель ", "май ", "июнь ", "июль ", "август ", "сентябрь ", "октябрь ", "ноябрь ", "декабрь " };
+            for (int j = first_month; j < categories.length + first_month ; j++) {
+                categories[i] = String.valueOf(monthNames[j%12]) + String.valueOf(first_year + j/12);
+                i += 1;
+            }
+        } else {
         for (int j = 0; j < categories.length; j++) {
             categories[j] = String.valueOf(j + 1) + dateType;
-        }
+        }}
         return categories;
     }
 

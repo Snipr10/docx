@@ -45,6 +45,9 @@ public class LogIn implements HttpHandler {
 
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
         cal.setTime(dateFromReal);
+        int first_month = cal.get(Calendar.MONTH);
+        int first_year = cal.get(Calendar.YEAR);
+
         String dateFromString =
                 DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateFromReal)
                 .replace(cal.get(Calendar.YEAR) + " г.", "");
@@ -137,7 +140,8 @@ public class LogIn implements HttpHandler {
         JSONObject usersJson = getUsers();
 
         XWPFDocument docx = WordWorker.createDoc(type, getNameThread(), String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
-                data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent
+                data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
+                first_month, first_year
                 );
         final String name = UUID.randomUUID() + ".docx";
         try (FileOutputStream fileOut = new FileOutputStream(name)) {
