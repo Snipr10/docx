@@ -651,21 +651,70 @@ class WordWorker {
             String[] categoriesCity = new String[]{};
             Double[] valuesACity  = new Double[]{};
             double valueCity;
+            int i = 0;
+            int count = 0;
             for (Object o :  jsonCity) {
-                if (categoriesCity.length >= 10) {
+                jsonObject = (JSONObject) o;
+                if (i == 5) {
+                    break;
+                }
+                count += Integer.parseInt(jsonObject.get("users").toString());
+                i ++;
+            }
+            for (Object o :  jsonCity) {
+                if (categoriesCity.length >= 5) {
                     break;
                 }
                 jsonObject = (JSONObject) o;
-                valueCity= Math.round(Double.parseDouble( jsonObject.get("users").toString())*100/users * 100.0) / 100.0;
-                if (valueCity < 1){
-                    break;
-                }
+                valueCity= Math.round(Double.parseDouble( jsonObject.get("users").toString())*100.00/count * 100.00) / 100.00;
                 categoriesCity = (String[]) append(categoriesCity, jsonObject.get("city"));
                 valuesACity = append(valuesACity, valueCity );
             }
             addPie(docxModel, categoriesCity, valuesACity);
 
+            XWPFParagraph paragraphTop10City = docxModel.createParagraph();
+            paragraphTop10City.setStyle("Heading2");
+            paragraphTop10City.setAlignment(ParagraphAlignment.LEFT);
+            XWPFRun paragraphConfigTop10city = paragraphTop10City.createRun();
+            paragraphConfigTop10city.setFontSize(12);
+            paragraphConfigTop10city.setFontFamily("Arial");
+            paragraphConfigTop10city.setBold(true);
+            paragraphConfigTop10city.addBreak();
+            paragraphConfigTop10city.setText(
+                    "Таблица 3 Топ-10 городов"
+            );
+            XWPFTable tableTop10OCity = docxModel.createTable();
+            XWPFTableRow tableTop10OCityRow = tableTop10OCity.getRow(0);
+            XWPFRun runCity = tableTop10OCityRow.getCell(0).getParagraphs().get(0).createRun();
+            tableTop10OCityRow.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+            runCity.setText("Город");
+            runCity.setBold(true);
+
+            tableTop10OCityRow.addNewTableCell();
+            XWPFRun r9 = tableTop10OCityRow.getCell(1).getParagraphs().get(0).createRun();
+            r9.setText("Количество");
+            r9.setBold(true);
+            tableTop10OCityRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+            XWPFTableRow t;
+
+            for (Object o : jsonCity) {
+                jsonObject = (JSONObject) o;
+                t = tableTop10OCity.createRow();
+                t.getCell(0).setText(jsonObject.get("city").toString());
+                t.getCell(1).setText(jsonObject.get("users").toString());
+            }
+
+            for(int x = 0;x < tableTop10OCity.getNumberOfRows(); x++){
+                XWPFTableRow row = tableTop10OCity.getRow(x);
+                XWPFTableCell cell0 = row.getCell(0);
+                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                XWPFTableCell cell1 = row.getCell(1);
+                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+            }
+
             XWPFParagraph paragraphTop10User = docxModel.createParagraph();
+            paragraphTop10User.setPageBreak(true);
             paragraphTop10User.setStyle("Heading2");
             paragraphTop10User.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigTop10User = paragraphTop10User.createRun();
@@ -674,7 +723,7 @@ class WordWorker {
             paragraphConfigTop10User.setBold(true);
             paragraphConfigTop10User.addBreak();
             paragraphConfigTop10User.setText(
-                    "Таблица 3 Топ-10 активных пользователей по сумме реакции (лайков, комментариев, репостов)"
+                    "Таблица 4 Топ-10 активных пользователей по сумме реакции (лайков, комментариев, репостов)"
             );
 
             XWPFTable tableTop10OUser = docxModel.createTable();
@@ -734,7 +783,7 @@ class WordWorker {
             paragraphConfigTypeKeyPubl.setBold(true);
             paragraphConfigTypeKeyPubl.addBreak();
             paragraphConfigTypeKeyPubl.setText(
-                    "Таблица 4 Топ-10 публикаций по сумме резонанса"
+                    "Таблица 5 Топ-10 публикаций по сумме резонанса"
             );
 
 
@@ -792,7 +841,7 @@ class WordWorker {
             paragraphConfigTypeKeyComment.setBold(true);
             paragraphConfigTypeKeyComment.addBreak();
             paragraphConfigTypeKeyComment.setText(
-                    "Таблица 5 Топ-10 комментариев к публикациям по сумме лайков"
+                    "Таблица 6 Топ-10 комментариев к публикациям по сумме лайков"
             );
 
 

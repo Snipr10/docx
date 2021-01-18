@@ -364,7 +364,7 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString = String.format("{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\"}",
+        String jsonInputString = String.format("{\"thread_id\": \"%s\", \"limit\": \"10\"}",
                 thread_id, dateFrom, dateTo);
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
