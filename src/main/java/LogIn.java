@@ -242,7 +242,7 @@ public class LogIn implements HttpHandler {
 
     }
     private Integer getPostsSources() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats");
+        URL url = new URL("https://api.glassen-it.com/component/socparser/content/membersCount");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -265,14 +265,7 @@ public class LogIn implements HttpHandler {
             }
             res += response.toString();
         }
-        int total = 0;
-        JSONObject jsonObjects = new JSONObject(res);
-        JSONArray jsonArray;
-        for(Object o: (JSONArray)jsonObjects.get("graph_data")){
-            jsonArray = (JSONArray) o;
-            total += (int) jsonArray.get(1);
-        }
-        return total;
+        return (Integer) new JSONObject(res).get("source_count");
     }
 
 
