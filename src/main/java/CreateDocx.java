@@ -652,25 +652,34 @@ class WordWorker {
             Double[] valuesACity  = new Double[]{};
             double valueCity;
             int i = 0;
-            int count = 0;
+//            int count5 = 0;
+            int count10 = 0;
+
             for (Object o :  jsonCity) {
                 jsonObject = (JSONObject) o;
-                if (i == 5) {
+                if (i == 10) {
                     break;
                 }
-                count += Integer.parseInt(jsonObject.get("users").toString());
+//                if (i < 5) {
+//                    count5 += Integer.parseInt(jsonObject.get("users").toString());
+//                }
+                count10 += Integer.parseInt(jsonObject.get("users").toString());
                 i ++;
             }
             for (Object o :  jsonCity) {
-                if (categoriesCity.length >= 5) {
+                if (categoriesCity.length >= 10) {
                     break;
                 }
+
                 jsonObject = (JSONObject) o;
-                valueCity= Math.round(Double.parseDouble( jsonObject.get("users").toString())*100.00/count * 100.00) / 100.00;
+                valueCity= Math.round(Double.parseDouble( jsonObject.get("users").toString())*100.00/count10 * 100.00) / 100.00;
+                if (valueCity < 1) {
+                    break;
+                }
                 categoriesCity = (String[]) append(categoriesCity, jsonObject.get("city"));
                 valuesACity = append(valuesACity, valueCity );
             }
-            addPie(docxModel, categoriesCity, valuesACity);
+            addPieCity(docxModel, categoriesCity, valuesACity);
 
             XWPFParagraph paragraphTop10City = docxModel.createParagraph();
             paragraphTop10City.setStyle("Heading2");
@@ -695,22 +704,31 @@ class WordWorker {
             r9.setText("Количество");
             r9.setBold(true);
             tableTop10OCityRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-            XWPFTableRow t;
+
+
+            tableTop10OCityRow.addNewTableCell();
+            XWPFRun run10a = tableTop10OCityRow.getCell(2).getParagraphs().get(0).createRun();
+            run10a.setText("%");
+            run10a.setBold(true);
+            tableTop10OCityRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
 
             for (Object o : jsonCity) {
                 jsonObject = (JSONObject) o;
-                t = tableTop10OCity.createRow();
-                t.getCell(0).setText(jsonObject.get("city").toString());
-                t.getCell(1).setText(jsonObject.get("users").toString());
+                getRow(tableTop10OCity, jsonObject.get("city").toString(), jsonObject.get("users").toString(),
+                        String.format("%.1f",Double.parseDouble(jsonObject.get("users").toString())*100.0/Double.valueOf(count10)));
             }
 
             for(int x = 0;x < tableTop10OCity.getNumberOfRows(); x++){
-                XWPFTableRow row = tableTop10OCity.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                XWPFTableRow row000 = tableTop10OCity.getRow(x);
+                XWPFTableCell cell0000 = row000.getCell(0);
+                cell0000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                XWPFTableCell cell1000 = row000.getCell(1);
+                cell1000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                cell1000.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                XWPFTableCell cell2000 = row000.getCell(2);
+                cell2000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                cell2000.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
             }
 
             XWPFParagraph paragraphTop10User = docxModel.createParagraph();
@@ -1146,11 +1164,12 @@ class WordWorker {
 
         XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
 
-        // create data sources
         int numOfPoints = categories.length;
         String categoryDataRange = chart.formatRange(new CellRangeAddress(1, numOfPoints, 0, 0));
         String valuesDataRangeA = chart.formatRange(new CellRangeAddress(1, numOfPoints, 1, 1));
         XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
+
+
         XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesA, valuesDataRangeA, 1);
 
         // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
@@ -1170,6 +1189,8 @@ class WordWorker {
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowPercent().setVal(true);
         if (RGB) {
             int pointCount = series.getCategoryData().getPointCount();
             for (int p = 0; p < pointCount; p++) {
@@ -1204,8 +1225,75 @@ class WordWorker {
         return document;
     }
 
+    private static XWPFDocument addPieCity(XWPFDocument document,  String[] categories, Double[] valuesA) throws IOException, InvalidFormatException {
+        // create the data
+
+        // create the chart
+
+        XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
+        for (int i=0; i < categories.length; i++) {
+            categories[i] += "; " + String.format("%.1f", valuesA[i]) + "%";
+        }
+        // create data sources
+        int numOfPoints = categories.length;
+        String categoryDataRange = chart.formatRange(new CellRangeAddress(1, numOfPoints, 0, 0));
+        String valuesDataRangeA = chart.formatRange(new CellRangeAddress(1, numOfPoints, 1, 1));
+        XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
+
+        XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesA, valuesDataRangeA, 1);
+
+        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
+        // Else first and last category is exactly on cross points and the bars are only half visible.
+//        Method andPrivateMethod
+//                = XDDFDoughnutChartData.class.XDDFDoughnutChartData(
+//                "privateAnd", boolean.class, boolean.class);
+//        new XDDFDoughnutChartData(1, null);
+        XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
+        XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
+        data.setVaryColors(true);
+//        series.setShowLeaderLines(false);
+        series.setTitle("", chart.setSheetTitle("", 1));
+
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDLbls();
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowVal().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowPercent().setVal(false);
+
+//            int pointCount = series.getCategoryData().getPointCount();
+//            for (int p = 0; p < pointCount; p++) {
+//                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDPt().addNewIdx().setVal(p);
+//                if (p == 1) {
+//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(11));
+//                }
+//                if (p == 2) {
+//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(10));
+//                }
+//                if (p == 0) {
+//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(23));
+//                }
+//            }
+
+//       chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx().setVal(1);
+//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).(p)
+////                    .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(p+10));
+//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx()  addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(2));
+//                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(3));
+//                        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(4));
+        chart.plot(data);
 
 
+
+//        XDDFChartLegend legend = chart.getOrAddLegend();
+//        legend.setPosition(LegPosition.RIGHT);
+//        legend.setOverlay(true);
+        return document;
+    }
 
     private static XWPFDocument addArea(XWPFDocument document, String[] categories,
     Double[] valuesNegative,
