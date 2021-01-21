@@ -281,9 +281,9 @@ class WordWorker {
                     "Диаграмма 4 Тональность публикаций"
             );
 
-
-            addPie(docxModel, new String[]{"Нейтральная","Позитивная","Негативная"}, new Double[]{(double) getComment(jsonComments, "netural"),
-                    (double) getComment(jsonComments, "positive"), (double) getComment(jsonComments, "negative")}, true);
+            JSONObject jsonPostTotal = ((JSONObject) jsonPosts.get("total"));
+            addPie(docxModel, new String[]{"Нейтральная","Позитивная","Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
+                    (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")}, true);
 
 
             XWPFParagraph paragraphTypeComDyn= docxModel.createParagraph();
@@ -304,10 +304,10 @@ class WordWorker {
             Double[] valuesPositive = new Double[]{};
             Double[] valuesNetural = new Double[]{};
 
-            JSONArray positive = (JSONArray) (jsonComments).get("positive");
-            JSONArray netural = (JSONArray) (jsonComments).get("netural");
-            JSONArray negative = (JSONArray) (jsonComments).get("negative");
-            JSONArray totalComments = ((JSONArray) (jsonComments).get("total"));
+            JSONArray positive = (JSONArray) (jsonPostTotal).get("positive");
+            JSONArray netural = (JSONArray) (jsonPostTotal).get("netural");
+            JSONArray negative = (JSONArray) (jsonPostTotal).get("negative");
+            JSONArray totalComments = ((JSONArray) (jsonPostTotal).get("total"));
 
             double positiveInt;
             double neturalInt;
@@ -322,7 +322,9 @@ class WordWorker {
                     neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
                     sum = negativeInt + neturalInt + positiveInt;
                     categoriesPostType = append(categoriesPostType, (String) ((JSONArray) negative.get(i)).get(0));
-
+//                    valuesNegative = append(valuesNegative, negativeInt);
+//                    valuesPositive = append(valuesPositive, positiveInt);
+//                    valuesNetural = append(valuesNetural, neturalInt);
                     if (sum == 0) {
                         valuesNegative = append(valuesNegative, 33d);
                         // 033
@@ -341,7 +343,6 @@ class WordWorker {
                 }
             }
             else {
-
                 boolean isContain;
                 long circe = 1;
                 int circeM;
@@ -354,8 +355,6 @@ class WordWorker {
                     } else{
                     circeM = 10; }
                 }
-
-
                     for (int i = 0; i < totalComments.length(); i++) {
 
                         negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
@@ -1309,8 +1308,8 @@ class WordWorker {
 
         XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
         XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesNegative, valuesDataRangeA, 1);
-        XDDFNumericalDataSource<Double> valuesDataB = XDDFDataSourcesFactory.fromArray(valuesPositive, valuesDataRangeB, 2);
-        XDDFNumericalDataSource<Double> valuesDataC = XDDFDataSourcesFactory.fromArray(valuesNetural, valuesDataRangeC, 3);
+        XDDFNumericalDataSource<Double> valuesDataB = XDDFDataSourcesFactory.fromArray(valuesNetural, valuesDataRangeB, 2);
+        XDDFNumericalDataSource<Double> valuesDataC = XDDFDataSourcesFactory.fromArray(valuesPositive, valuesDataRangeC, 3);
 
         XDDFSolidFillProperties WHITE = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.WHITE));
         XDDFLineProperties lineWhite = new XDDFLineProperties();
@@ -1333,16 +1332,18 @@ class WordWorker {
         XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
         ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
         ((XDDFBarChartData) data).setBarGrouping(BarGrouping.STACKED);
+        XDDFBarChartData bar = (XDDFBarChartData) data;
+        bar.setBarGrouping(BarGrouping.PERCENT_STACKED);
 
         chart.getCTChart().getPlotArea().getBarChartArray(0).addNewOverlap().setVal((byte)100);
 
 
         XDDFChartData.Series series1 = data.addSeries(categoriesData, valuesDataA);
-        series1.setTitle("Негативная тональность", null);
+        series1.setTitle("Негативная тональность %", null);
         XDDFChartData.Series series2 = data.addSeries(categoriesData, valuesDataB);
-        series2.setTitle("Позитивная тональность", null);
+        series2.setTitle("Нейтральная тональность %", null);
         XDDFChartData.Series series3 = data.addSeries(categoriesData, valuesDataC);
-        series3.setTitle("Нейтральная тональность", null);
+        series3.setTitle("Позитивная тональность %", null);
 
 
         XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.RED));
@@ -1353,7 +1354,7 @@ class WordWorker {
         }
         properties.setFillProperties(fill);
         series1.setShapeProperties(properties);
-        fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GREEN));
+        fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GRAY));
 
         properties = series2.getShapeProperties();
         if (properties == null) {
@@ -1361,7 +1362,7 @@ class WordWorker {
         }
         properties.setFillProperties(fill);
         series2.setShapeProperties(properties);
-        fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GRAY));
+        fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GREEN));
 
         properties = series3.getShapeProperties();
         if (properties == null) {
@@ -1377,15 +1378,18 @@ class WordWorker {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowLegendKey().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowCatName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowSerName().setVal(false);
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowBubbleSize().setVal(true);
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowVal().setVal(true);
         }
-
 
         data.setVaryColors(true);
         chart.plot(data);
 
         XDDFChartLegend legend = chart.getOrAddLegend();
+//        legend.setPosition(LegendPosition.TOP);
         legend.setPosition(LegendPosition.TOP);
-        legend.setOverlay(true);
+//        legend.set
+//        legend.setOverlay(true);
         return document;
     }
 
