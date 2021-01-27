@@ -47,7 +47,7 @@ class WordWorker {
                                  JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts,
                                  JSONArray postsContent,JSONArray commentContent, int first_month, int first_year
                                          ) {
-        int users =  Integer.parseInt(usersJson.get("count").toString());
+        int users = Integer.parseInt(usersJson.get("count").toString());
         try {
             XWPFDocument docxModel = new XWPFDocument();
             XWPFParagraph bodyParagraph = docxModel.createParagraph();
@@ -189,7 +189,7 @@ class WordWorker {
             run3.setText("Количество комментариев к публикациям, шт.");
             tableRowFour.getCell(1).setText(String.valueOf(data.total_comment));
 
-            for(int x = 0;x < table.getNumberOfRows(); x++){
+            for (int x = 0; x < table.getNumberOfRows(); x++) {
                 XWPFTableRow row = table.getRow(x);
                 XWPFTableCell cell0 = row.getCell(0);
                 cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(8000));
@@ -211,7 +211,7 @@ class WordWorker {
             );
 
 
-            ParseData postData = getWeekData(type, (JSONArray) ((JSONObject)jsonPosts.get("total")).get("total"), first_month, first_year);
+            ParseData postData = getWeekData(type, (JSONArray) ((JSONObject) jsonPosts.get("total")).get("total"), first_month, first_year);
             docxModel = addChats(docxModel, postData.categories, postData.valuesA);
 
 
@@ -253,23 +253,23 @@ class WordWorker {
             Double[] valuesAComments = comments.valuesA;
 
             double postCommentD;
-            for (int i =0; i < categoriesPost.length; i ++){
+            for (int i = 0; i < categoriesPost.length; i++) {
                 postCommentD = 0;
                 postDate = categoriesPost[i];
                 if (valuesAPost[i] != 0) {
-                for (int j =0; j < categoriesComments.length; j ++) {
-                    if (postDate.equals(categoriesComments[j])) {
-                        postCommentD =  Math.round(new Double( valuesAPost[i].toString()) /new Double( valuesAComments[i].toString()) * 100.0) / 100.0;
-                        break;
+                    for (int j = 0; j < categoriesComments.length; j++) {
+                        if (postDate.equals(categoriesComments[j])) {
+                            postCommentD = Math.round(new Double(valuesAPost[i].toString()) / new Double(valuesAComments[i].toString()) * 100.0) / 100.0;
+                            break;
+                        }
                     }
-                }
 
                 }
-                postCommentData= append(postCommentData, postCommentD);
+                postCommentData = append(postCommentData, postCommentD);
             }
             addChats(docxModel, categoriesPost, postCommentData);
 
-            XWPFParagraph paragraphPieTypeCom= docxModel.createParagraph();
+            XWPFParagraph paragraphPieTypeCom = docxModel.createParagraph();
             paragraphPieTypeCom.setStyle("Heading2");
             paragraphPieTypeCom.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigPieTypeCom = paragraphPieTypeCom.createRun();
@@ -282,11 +282,11 @@ class WordWorker {
             );
 
             JSONObject jsonPostTotal = ((JSONObject) jsonPosts.get("total"));
-            addPie(docxModel, new String[]{"Нейтральная","Позитивная","Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
+            addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
                     (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")}, true);
 
 
-            XWPFParagraph paragraphTypeComDyn= docxModel.createParagraph();
+            XWPFParagraph paragraphTypeComDyn = docxModel.createParagraph();
             paragraphTypeComDyn.setStyle("Heading2");
             paragraphTypeComDyn.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigTypeComDyn = paragraphTypeComDyn.createRun();
@@ -299,7 +299,7 @@ class WordWorker {
             );
 
 
-            String[] categoriesPostType= new String[]{};
+            String[] categoriesPostType = new String[]{};
             Double[] valuesNegative = new Double[]{};
             Double[] valuesPositive = new Double[]{};
             Double[] valuesNetural = new Double[]{};
@@ -335,14 +335,13 @@ class WordWorker {
                     } else {
                         valuesNegative = append(valuesNegative, (double) Math.round(negativeInt / sum * 100));
                         // 033
-                        valuesPositive =  append(valuesPositive, (double) Math.round(positiveInt / sum * 100));
+                        valuesPositive = append(valuesPositive, (double) Math.round(positiveInt / sum * 100));
                         // 033
-                        valuesNetural =  append(valuesNetural, (double) Math.round(neturalInt / sum * 100));
+                        valuesNetural = append(valuesNetural, (double) Math.round(neturalInt / sum * 100));
                     }
 
                 }
-            }
-            else {
+            } else {
                 boolean isContain;
                 long circe = 1;
                 int circeM;
@@ -352,62 +351,63 @@ class WordWorker {
                 } else {
                     if (type.equals("month")) {
                         circeM = 100;
-                    } else{
-                    circeM = 10; }
+                    } else {
+                        circeM = 10;
+                    }
                 }
-                    for (int i = 0; i < totalComments.length(); i++) {
+                for (int i = 0; i < totalComments.length(); i++) {
 
-                        negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
-                        positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
-                        neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
-                        int dateInt = getDate((String) ((JSONArray) negative.get(i)).get(0), type);
-                        if (lastDate != 1 && dateInt == 1 && categoriesPostType.length > 0) {
-                            circe = circe * circeM;
-                        }
-                        String dateSo = String.valueOf(dateInt * circe);
-                        isContain = false;
-                        for (int j = 0; j < categoriesPostType.length; j++) {
-                            if (categoriesPostType[j].equals(dateSo)) {
-                                valuesNegative[j] += negativeInt;
-                                valuesPositive[j] += positiveInt;
-                                valuesNetural[j] += neturalInt;
-                                isContain = true;
-                                break;
-                            }
-                        }
-                        if (!isContain) {
-                            categoriesPostType = append(categoriesPostType, dateSo);
-                            valuesNegative = append(valuesNegative, 100.00 * negativeInt);
-                            // 033
-                            valuesPositive = append(valuesPositive, 100.00 * positiveInt);
-                            // 033
-                            valuesNetural = append(valuesNetural, 100.00 * neturalInt);
-                        }
-                        lastDate = dateInt;
-
+                    negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
+                    positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
+                    neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
+                    int dateInt = getDate((String) ((JSONArray) negative.get(i)).get(0), type);
+                    if (lastDate != 1 && dateInt == 1 && categoriesPostType.length > 0) {
+                        circe = circe * circeM;
                     }
+                    String dateSo = String.valueOf(dateInt * circe);
+                    isContain = false;
                     for (int j = 0; j < categoriesPostType.length; j++) {
-                        if (valuesNegative[j] == 0 && valuesPositive[j] == 0 && valuesNetural[j] == 0) {
-                            valuesNegative[j] = 33d;
-                            valuesPositive[j] = 33d;
-                            valuesNetural[j] = 33d;
-                        } else {
-                            sum = valuesNegative[j] + valuesPositive[j] + valuesNetural[j];
-                            valuesNegative[j] =
-                                    (double) Math.round((valuesNegative[j] / sum) * 100.0);
-                            valuesPositive[j] =
-                                    (double) Math.round((valuesPositive[j] / sum) * 100.0);
-                            valuesNetural[j] =
-                                    (double) Math.round((valuesNetural[j] / sum) * 100.0);
+                        if (categoriesPostType[j].equals(dateSo)) {
+                            valuesNegative[j] += negativeInt;
+                            valuesPositive[j] += positiveInt;
+                            valuesNetural[j] += neturalInt;
+                            isContain = true;
+                            break;
                         }
                     }
+                    if (!isContain) {
+                        categoriesPostType = append(categoriesPostType, dateSo);
+                        valuesNegative = append(valuesNegative, 100.00 * negativeInt);
+                        // 033
+                        valuesPositive = append(valuesPositive, 100.00 * positiveInt);
+                        // 033
+                        valuesNetural = append(valuesNetural, 100.00 * neturalInt);
+                    }
+                    lastDate = dateInt;
+
+                }
+                for (int j = 0; j < categoriesPostType.length; j++) {
+                    if (valuesNegative[j] == 0 && valuesPositive[j] == 0 && valuesNetural[j] == 0) {
+                        valuesNegative[j] = 33d;
+                        valuesPositive[j] = 33d;
+                        valuesNetural[j] = 33d;
+                    } else {
+                        sum = valuesNegative[j] + valuesPositive[j] + valuesNetural[j];
+                        valuesNegative[j] =
+                                (double) Math.round((valuesNegative[j] / sum) * 100.0);
+                        valuesPositive[j] =
+                                (double) Math.round((valuesPositive[j] / sum) * 100.0);
+                        valuesNetural[j] =
+                                (double) Math.round((valuesNetural[j] / sum) * 100.0);
+                    }
+                }
                 changeWeekString(categoriesPostType, type, first_month, first_year);
             }
 
             addArea(docxModel, categoriesPostType,
-                     valuesNegative,
-                     valuesPositive,
-                     valuesNetural);
+                    valuesNegative,
+                    valuesPositive,
+                    valuesNetural);
             XWPFParagraph bodyParagraphIst = docxModel.createParagraph();
             bodyParagraphIst.setPageBreak(true);
             bodyParagraphIst.setStyle("Heading1");
@@ -420,7 +420,7 @@ class WordWorker {
                     "Источники"
             );
 
-            XWPFParagraph paragraphTypeComIst= docxModel.createParagraph();
+            XWPFParagraph paragraphTypeComIst = docxModel.createParagraph();
             paragraphTypeComIst.setStyle("Heading2");
             paragraphTypeComIst.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigTypeComIst = paragraphTypeComIst.createRun();
@@ -457,32 +457,32 @@ class WordWorker {
             XWPFTableRow tableRowTwoIst = tableIst.createRow();
             tableRowTwoIst.getCell(0).setText("Вконтакте");
             tableRowTwoIst.getCell(1).setText(String.valueOf(total_vk));
-            tableRowTwoIst.getCell(2).setText(String.valueOf(Math.round((float) total_vk *100.00/ (float) all*100.00)/100.0));
+            tableRowTwoIst.getCell(2).setText(String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowThreeIst = tableIst.createRow();
             tableRowThreeIst.getCell(0).setText("Facebook");
             tableRowThreeIst.getCell(1).setText(String.valueOf(total_fb));
-            tableRowThreeIst.getCell(2).setText(String.valueOf(Math.round((float)total_fb*100/(float)all*100.00)/100.0));
+            tableRowThreeIst.getCell(2).setText(String.valueOf(Math.round((float) total_fb * 100 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowThIst = tableIst.createRow();
             tableRowThIst.getCell(0).setText("Twitter");
             tableRowThIst.getCell(1).setText(String.valueOf(total_tw));
-            tableRowThIst.getCell(2).setText(String.valueOf(Math.round((float)total_tw*100/(float)all*100.00)/100.0));
+            tableRowThIst.getCell(2).setText(String.valueOf(Math.round((float) total_tw * 100 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowFIst = tableIst.createRow();
             tableRowFIst.getCell(0).setText("Инстаграм");
             tableRowFIst.getCell(1).setText(String.valueOf(total_ig));
-            tableRowFIst.getCell(2).setText(String.valueOf(Math.round((float)total_ig*100/(float)all*100.00)/100.0));
+            tableRowFIst.getCell(2).setText(String.valueOf(Math.round((float) total_ig * 100 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowSixIst = tableIst.createRow();
             tableRowSixIst.getCell(0).setText("Telegram");
             tableRowSixIst.getCell(1).setText(String.valueOf(total_tg));
-            tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float)total_tg*100/(float)all*100.00)/100.0));
+            tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float) total_tg * 100 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowSevIst = tableIst.createRow();
             tableRowSevIst.getCell(0).setText("СМИ");
             tableRowSevIst.getCell(1).setText(String.valueOf(total_gs));
-            tableRowSevIst.getCell(2).setText(String.valueOf(Math.round((float)total_gs*100/(float)all *100.00)/100.0));
+            tableRowSevIst.getCell(2).setText(String.valueOf(Math.round((float) total_gs * 100 / (float) all * 100.00) / 100.0));
 
             XWPFTableRow tableRowSevAll = tableIst.createRow();
             tableRowSevAll.getCell(0).setText("Итог");
@@ -490,7 +490,7 @@ class WordWorker {
             tableRowSevAll.getCell(2).setText("100");
 
 
-            for(int x = 0;x < tableIst.getNumberOfRows(); x++){
+            for (int x = 0; x < tableIst.getNumberOfRows(); x++) {
                 XWPFTableRow row = tableIst.getRow(x);
                 XWPFTableCell cell0 = row.getCell(0);
                 cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
@@ -501,6 +501,7 @@ class WordWorker {
                 cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
                 cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
             }
+
 
             XWPFParagraph paragraphTypeComSmi= docxModel.createParagraph();
             paragraphTypeComSmi.setStyle("Heading2");
@@ -594,6 +595,7 @@ class WordWorker {
             );
 
 
+
             ParseData auditData = getWeekData(type, (JSONArray) (stat).get("graph_data"), first_month, first_year);
             addChats(docxModel, auditData.categories, auditData.valuesA);
 
@@ -647,6 +649,7 @@ class WordWorker {
             paragraphConfigCity.setText(
                     "Диаграмма 10 Распределение аудитории по геолокации"
             );
+
             String[] categoriesCity = new String[]{};
             Double[] valuesACity  = new Double[]{};
             double valueCity;
@@ -691,6 +694,7 @@ class WordWorker {
             paragraphConfigTop10city.setText(
                     "Таблица 3 Топ-10 городов"
             );
+
             XWPFTable tableTop10OCity = docxModel.createTable();
             XWPFTableRow tableTop10OCityRow = tableTop10OCity.getRow(0);
             XWPFRun runCity = tableTop10OCityRow.getCell(0).getParagraphs().get(0).createRun();
@@ -711,11 +715,13 @@ class WordWorker {
             run10a.setBold(true);
             tableTop10OCityRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
 
-
+            try{
             for (Object o : jsonCity) {
                 jsonObject = (JSONObject) o;
                 getRow(tableTop10OCity, jsonObject.get("city").toString(), jsonObject.get("users").toString(),
                         String.format("%.1f",Double.parseDouble(jsonObject.get("users").toString())*100.0/Double.valueOf(count10)));
+            }} catch (Exception e) {
+                System.out.println("S");
             }
 
             for(int x = 0;x < tableTop10OCity.getNumberOfRows(); x++){
@@ -1229,12 +1235,17 @@ class WordWorker {
 
         // create the chart
 
-        XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
         for (int i=0; i < categories.length; i++) {
             categories[i] += "; " + String.format("%.1f", valuesA[i]) + "%";
         }
         // create data sources
+
         int numOfPoints = categories.length;
+        if (numOfPoints == 0){
+            return document;
+        }
+        XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
+
         String categoryDataRange = chart.formatRange(new CellRangeAddress(1, numOfPoints, 0, 0));
         String valuesDataRangeA = chart.formatRange(new CellRangeAddress(1, numOfPoints, 1, 1));
         XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories, categoryDataRange, 0);
