@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 class WordWorker {
+    private static  int entityOnPage = 0;
     private static int commentsLenght= 100;
     static CellReference setTitleInDataSheet(XWPFChart chart, String title, int column) throws Exception {
         XSSFWorkbook workbook = chart.getWorkbook();
@@ -48,6 +49,7 @@ class WordWorker {
                                  JSONArray postsContent,JSONArray commentContent, int first_month, int first_year
                                          ) {
         int users = Integer.parseInt(usersJson.get("count").toString());
+
         try {
             XWPFDocument docxModel = new XWPFDocument();
             XWPFParagraph bodyParagraph = docxModel.createParagraph();
@@ -122,21 +124,6 @@ class WordWorker {
             paragraphConfigDate.addBreak();
 
 
-//            CTP ctpFooterModel = createFooterModel(
-//                    "На базе данных программного обеспечения собственной разработки ООО «SNIPR»");
-
-//            CTSectPr sectPrFirst = docxModel.getDocument().getBody().addNewSectPr();
-
-//            XWPFHeaderFooterPolicy headerFooterPolicyFirst = new XWPFHeaderFooterPolicy(docxModel, sectPrFirst);
-//            XWPFParagraph footerParagraph = new XWPFParagraph(ctpFooterModel, docxModel);
-//            XWPFRun runFirstFooter = footerParagraph.createRun();
-//            runFirstFooter.setBold(true);
-//            headerFooterPolicyFirst.createFooter(
-//                    XWPFHeaderFooterPolicy.FIRST,
-//                    new XWPFParagraph[]{footerParagraph}
-//            );
-
-
             XWPFParagraph paragraph = docxModel.createParagraph();
             paragraph.setPageBreak(true);
             XWPFRun run;
@@ -197,53 +184,16 @@ class WordWorker {
                 cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1000));
                 cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.RIGHT);
             }
-
-            XWPFParagraph paragraphDinColPub = docxModel.createParagraph();
-            paragraphDinColPub.setStyle("Heading2");
-            paragraphDinColPub.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigDinColPub = paragraphDinColPub.createRun();
-            paragraphConfigDinColPub.setFontSize(12);
-            paragraphConfigDinColPub.setFontFamily("Arial");
-            paragraphConfigDinColPub.setBold(true);
-            paragraphConfigDinColPub.addBreak();
-            paragraphConfigDinColPub.setText(
-                    "Диаграмма 1 Динамика количества публикаций"
-            );
-
-
+            entityOnPage =1;
+            int diagramCount = 1;
+            int tableCount = 1;
             ParseData postData = getWeekData(type, (JSONArray) ((JSONObject) jsonPosts.get("total")).get("total"), first_month, first_year);
-            docxModel = addChats(docxModel, postData.categories, postData.valuesA);
-
-
-            XWPFParagraph paragraphDinColPubCom = docxModel.createParagraph();
-            paragraphDinColPubCom.setStyle("Heading2");
-            paragraphDinColPubCom.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigDinColPubCom = paragraphDinColPubCom.createRun();
-            paragraphConfigDinColPubCom.setFontSize(12);
-            paragraphConfigDinColPubCom.setFontFamily("Arial");
-            paragraphConfigDinColPubCom.setBold(true);
-            paragraphConfigDinColPubCom.addBreak();
-            paragraphConfigDinColPubCom.setText(
-                    "Диаграмма 2 Динамика количества комментариев к публикациям"
-            );
+            diagramCount = addChats(docxModel, postData.categories, postData.valuesA, String.format("Диаграмма %s Динамика количества публикаций", diagramCount),  diagramCount);
 
 
             ParseData comments = getWeekData(type, (JSONArray) (jsonComments).get("total"), first_month, first_year);
-            addChats(docxModel, comments.categories, comments.valuesA);
+            diagramCount= addChats(docxModel, comments.categories, comments.valuesA, String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount), diagramCount);
             String postDate;
-
-            XWPFParagraph paragraphDinColOnePubCom = docxModel.createParagraph();
-            paragraphDinColOnePubCom.setStyle("Heading2");
-            paragraphDinColOnePubCom.setPageBreak(true);
-            paragraphDinColOnePubCom.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigDinColOnePubCom = paragraphDinColOnePubCom.createRun();
-            paragraphConfigDinColOnePubCom.setFontSize(12);
-            paragraphConfigDinColOnePubCom.setFontFamily("Arial");
-            paragraphConfigDinColOnePubCom.setBold(true);
-            paragraphConfigDinColOnePubCom.addBreak();
-            paragraphConfigDinColOnePubCom.setText(
-                    "Диаграмма 3 Динамика количества комментариев на 1 публикацию"
-            );
 
             JSONArray jsonArray;
             String[] categoriesPost = postData.categories;
@@ -259,7 +209,11 @@ class WordWorker {
                 if (valuesAPost[i] != 0) {
                     for (int j = 0; j < categoriesComments.length; j++) {
                         if (postDate.equals(categoriesComments[j])) {
-                            postCommentD = Math.round(new Double(valuesAPost[i].toString()) / new Double(valuesAComments[i].toString()) * 100.0) / 100.0;
+                            if (valuesAComments[i] == 0){
+                                postCommentD = 0.0;
+                            } else {
+                                postCommentD = Math.round(new Double(valuesAPost[i].toString()) / new Double(valuesAComments[i].toString()) * 100.0) / 100.0;
+                            }
                             break;
                         }
                     }
@@ -267,36 +221,12 @@ class WordWorker {
                 }
                 postCommentData = append(postCommentData, postCommentD);
             }
-            addChats(docxModel, categoriesPost, postCommentData);
+            diagramCount = addChats(docxModel, categoriesPost, postCommentData, String.format("Диаграмма %s Динамика количества комментариев на 1 публикацию", diagramCount), diagramCount);
 
-            XWPFParagraph paragraphPieTypeCom = docxModel.createParagraph();
-            paragraphPieTypeCom.setStyle("Heading2");
-            paragraphPieTypeCom.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigPieTypeCom = paragraphPieTypeCom.createRun();
-            paragraphConfigPieTypeCom.setFontSize(12);
-            paragraphConfigPieTypeCom.setFontFamily("Arial");
-            paragraphConfigPieTypeCom.setBold(true);
-            paragraphConfigPieTypeCom.addBreak();
-            paragraphConfigPieTypeCom.setText(
-                    "Диаграмма 4 Тональность публикаций"
-            );
 
             JSONObject jsonPostTotal = ((JSONObject) jsonPosts.get("total"));
-            addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
-                    (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")}, true);
-
-
-            XWPFParagraph paragraphTypeComDyn = docxModel.createParagraph();
-            paragraphTypeComDyn.setStyle("Heading2");
-            paragraphTypeComDyn.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeComDyn = paragraphTypeComDyn.createRun();
-            paragraphConfigTypeComDyn.setFontSize(12);
-            paragraphConfigTypeComDyn.setFontFamily("Arial");
-            paragraphConfigTypeComDyn.setBold(true);
-            paragraphConfigTypeComDyn.addBreak();
-            paragraphConfigTypeComDyn.setText(
-                    "Диаграмма 5 Динамика распределения публикаций по тональности"
-            );
+            diagramCount = addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
+                    (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")}, String.format("Диаграмма %s Тональность публикаций", diagramCount), diagramCount, true);
 
 
             String[] categoriesPostType = new String[]{};
@@ -322,9 +252,6 @@ class WordWorker {
                     neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
                     sum = negativeInt + neturalInt + positiveInt;
                     categoriesPostType = append(categoriesPostType, (String) ((JSONArray) negative.get(i)).get(0));
-//                    valuesNegative = append(valuesNegative, negativeInt);
-//                    valuesPositive = append(valuesPositive, positiveInt);
-//                    valuesNetural = append(valuesNetural, neturalInt);
                     if (sum == 0) {
                         valuesNegative = append(valuesNegative, 33d);
                         // 033
@@ -404,33 +331,11 @@ class WordWorker {
                 changeWeekString(categoriesPostType, type, first_month, first_year);
             }
 
-            addArea(docxModel, categoriesPostType,
+            diagramCount= addArea(docxModel, categoriesPostType,
                     valuesNegative,
                     valuesPositive,
-                    valuesNetural);
-            XWPFParagraph bodyParagraphIst = docxModel.createParagraph();
-            bodyParagraphIst.setPageBreak(true);
-            bodyParagraphIst.setStyle("Heading1");
-            bodyParagraphIst.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigIst = bodyParagraphIst.createRun();
-            paragraphConfigIst.setFontSize(22);
-            paragraphConfigIst.setBold(true);
-            paragraphConfigIst.setFontFamily("Arial");
-            paragraphConfigIst.setText(
-                    "Источники"
-            );
-
-            XWPFParagraph paragraphTypeComIst = docxModel.createParagraph();
-            paragraphTypeComIst.setStyle("Heading2");
-            paragraphTypeComIst.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeComIst = paragraphTypeComIst.createRun();
-            paragraphConfigTypeComIst.setFontSize(12);
-            paragraphConfigTypeComIst.setFontFamily("Arial");
-            paragraphConfigTypeComIst.setBold(true);
-            paragraphConfigTypeComIst.addBreak();
-            paragraphConfigTypeComIst.setText(
-                    "Таблица 1 Ключевые площадки"
-            );
+                    valuesNetural,
+                    String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
 
             int total_vk = getTotalMedia(jsonPosts, "vk");
             int total_tw = getTotalMedia(jsonPosts, "tw");
@@ -440,231 +345,160 @@ class WordWorker {
             int total_ig = getTotalMedia(jsonPosts, "ig");
             int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig;
 
-            XWPFTable tableIst = docxModel.createTable();
-            XWPFTableRow tableRowOneIst = tableIst.getRow(0);
-            XWPFRun run4 = tableRowOneIst.getCell(0).getParagraphs().get(0).createRun();
-            run4.setText("Площадка");
-            run4.setBold(true);
-            tableRowOneIst.addNewTableCell();
-            XWPFRun run5 = tableRowOneIst.getCell(1).getParagraphs().get(0).createRun();
-            run5.setText("Количество публикаций, шт.");
-            run5.setBold(true);
-            tableRowOneIst.addNewTableCell();
-            XWPFRun run6 = tableRowOneIst.getCell(2).getParagraphs().get(0).createRun();
-            run6.setText("   %     ");
-            run6.setBold(true);
-
-            XWPFTableRow tableRowTwoIst = tableIst.createRow();
-            tableRowTwoIst.getCell(0).setText("Вконтакте");
-            tableRowTwoIst.getCell(1).setText(String.valueOf(total_vk));
-            tableRowTwoIst.getCell(2).setText(String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowThreeIst = tableIst.createRow();
-            tableRowThreeIst.getCell(0).setText("Facebook");
-            tableRowThreeIst.getCell(1).setText(String.valueOf(total_fb));
-            tableRowThreeIst.getCell(2).setText(String.valueOf(Math.round((float) total_fb * 100 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowThIst = tableIst.createRow();
-            tableRowThIst.getCell(0).setText("Twitter");
-            tableRowThIst.getCell(1).setText(String.valueOf(total_tw));
-            tableRowThIst.getCell(2).setText(String.valueOf(Math.round((float) total_tw * 100 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowFIst = tableIst.createRow();
-            tableRowFIst.getCell(0).setText("Инстаграм");
-            tableRowFIst.getCell(1).setText(String.valueOf(total_ig));
-            tableRowFIst.getCell(2).setText(String.valueOf(Math.round((float) total_ig * 100 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowSixIst = tableIst.createRow();
-            tableRowSixIst.getCell(0).setText("Telegram");
-            tableRowSixIst.getCell(1).setText(String.valueOf(total_tg));
-            tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float) total_tg * 100 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowSevIst = tableIst.createRow();
-            tableRowSevIst.getCell(0).setText("СМИ");
-            tableRowSevIst.getCell(1).setText(String.valueOf(total_gs));
-            tableRowSevIst.getCell(2).setText(String.valueOf(Math.round((float) total_gs * 100 / (float) all * 100.00) / 100.0));
-
-            XWPFTableRow tableRowSevAll = tableIst.createRow();
-            tableRowSevAll.getCell(0).setText("Итог");
-            tableRowSevAll.getCell(1).setText(String.valueOf(all));
-            tableRowSevAll.getCell(2).setText("100");
-
-
-            for (int x = 0; x < tableIst.getNumberOfRows(); x++) {
-                XWPFTableRow row = tableIst.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-                XWPFTableCell cell2 = row.getCell(2);
-                cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            }
-
-
-            XWPFParagraph paragraphTypeComSmi= docxModel.createParagraph();
-            paragraphTypeComSmi.setStyle("Heading2");
-            paragraphTypeComSmi.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeComSmi = paragraphTypeComSmi.createRun();
-            paragraphConfigTypeComSmi.setFontSize(12);
-            paragraphConfigTypeComSmi.setFontFamily("Arial");
-            paragraphConfigTypeComSmi.setBold(true);
-            paragraphConfigTypeComSmi.addBreak();
-            paragraphConfigTypeComSmi.setText(
-                    "Диаграмма 6 Динамика количества публикаций на отдельных площадках"
-            );
-
 
             ParseData soData = getWeekDataMedia(type, jsonPosts, first_month, first_year);
-            addDоubleChats(docxModel, soData.categories, soData.valuesA, soData.valuesB );
-
-            XWPFParagraph paragraphTop10Own = docxModel.createParagraph();
-            paragraphTop10Own.setPageBreak(true);
-            paragraphTop10Own.setStyle("Heading2");
-            paragraphTop10Own.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTop10Own = paragraphTop10Own.createRun();
-            paragraphConfigTop10Own.setFontSize(12);
-            paragraphConfigTop10Own.setFontFamily("Arial");
-            paragraphConfigTop10Own.addBreak();
-            paragraphConfigTop10Own.setBold(true);
-            paragraphConfigTop10Own.setText(
-                    "Таблица 2 Топ-10 источников по количеству публикаций"
-            );
-
-            XWPFTable tableTop10Own = docxModel.createTable();
-            XWPFTableRow tableTop10OwnRow = tableTop10Own.getRow(0);
-
-            XWPFRun run12 = tableTop10OwnRow.getCell(0).getParagraphs().get(0).createRun();
-            run12.setText("Название источника");
-            run12.setBold(true);
-
-            tableTop10OwnRow.addNewTableCell();
-            XWPFRun run11 = tableTop10OwnRow.getCell(1).getParagraphs().get(0).createRun();
-            run11.setText("URL");
-            run11.setBold(true);
-            tableTop10OwnRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            tableTop10OwnRow.addNewTableCell();
-            XWPFRun run13 = tableTop10OwnRow.getCell(2).getParagraphs().get(0).createRun();
-            run13.setText("Количество публикаций");
-            run13.setBold(true);
-
-            JSONObject jsonObject;
-            for (Object o : posts) {
-                jsonObject = (JSONObject) o;
-                getRow(tableTop10Own, jsonObject.get("username").toString(), jsonObject.get("url").toString(),
-                        jsonObject.get("coefficient").toString());
+            double val = 0;
+            for (Double d:soData.valuesA){
+                val += d;
+            }
+            for (Double d:soData.valuesB){
+                val += d;
             }
 
-//            deleteBoarder(tableTop10Own);
+            if ((all != 0) || (val != 0) || jsonCity.length() == 0) {
 
-            for(int x = 0;x < tableTop10Own.getNumberOfRows(); x++){
-                XWPFTableRow row = tableTop10Own.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
-                XWPFTableCell cell2 = row.getCell(2);
-                cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                XWPFParagraph bodyParagraphIst = docxModel.createParagraph();
+                bodyParagraphIst.setPageBreak(true);
+                bodyParagraphIst.setStyle("Heading1");
+                bodyParagraphIst.setAlignment(ParagraphAlignment.LEFT);
+                XWPFRun paragraphConfigIst = bodyParagraphIst.createRun();
+                paragraphConfigIst.setFontSize(22);
+                paragraphConfigIst.setBold(true);
+                paragraphConfigIst.setFontFamily("Arial");
+                paragraphConfigIst.setText(
+                        "Источники"
+                );
+                entityOnPage = 0;
+                if (all == 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Ключевые площадки", tableCount));
+                    tableCount += 1;
+                    XWPFTable tableIst = docxModel.createTable();
+                    XWPFTableRow tableRowOneIst = tableIst.getRow(0);
+                    XWPFRun run4 = tableRowOneIst.getCell(0).getParagraphs().get(0).createRun();
+                    run4.setText("Площадка");
+                    run4.setBold(true);
+                    tableRowOneIst.addNewTableCell();
+                    XWPFRun run5 = tableRowOneIst.getCell(1).getParagraphs().get(0).createRun();
+                    run5.setText("Количество публикаций, шт.");
+                    run5.setBold(true);
+                    tableRowOneIst.addNewTableCell();
+                    XWPFRun run6 = tableRowOneIst.getCell(2).getParagraphs().get(0).createRun();
+                    run6.setText("   %     ");
+                    run6.setBold(true);
+
+                    XWPFTableRow tableRowTwoIst = tableIst.createRow();
+                    tableRowTwoIst.getCell(0).setText("Вконтакте");
+                    tableRowTwoIst.getCell(1).setText(String.valueOf(total_vk));
+                    tableRowTwoIst.getCell(2).setText(String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowThreeIst = tableIst.createRow();
+                    tableRowThreeIst.getCell(0).setText("Facebook");
+                    tableRowThreeIst.getCell(1).setText(String.valueOf(total_fb));
+                    tableRowThreeIst.getCell(2).setText(String.valueOf(Math.round((float) total_fb * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowThIst = tableIst.createRow();
+                    tableRowThIst.getCell(0).setText("Twitter");
+                    tableRowThIst.getCell(1).setText(String.valueOf(total_tw));
+                    tableRowThIst.getCell(2).setText(String.valueOf(Math.round((float) total_tw * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowFIst = tableIst.createRow();
+                    tableRowFIst.getCell(0).setText("Инстаграм");
+                    tableRowFIst.getCell(1).setText(String.valueOf(total_ig));
+                    tableRowFIst.getCell(2).setText(String.valueOf(Math.round((float) total_ig * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowSixIst = tableIst.createRow();
+                    tableRowSixIst.getCell(0).setText("Telegram");
+                    tableRowSixIst.getCell(1).setText(String.valueOf(total_tg));
+                    tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float) total_tg * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowSevIst = tableIst.createRow();
+                    tableRowSevIst.getCell(0).setText("СМИ");
+                    tableRowSevIst.getCell(1).setText(String.valueOf(total_gs));
+                    tableRowSevIst.getCell(2).setText(String.valueOf(Math.round((float) total_gs * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowSevAll = tableIst.createRow();
+                    tableRowSevAll.getCell(0).setText("Итог");
+                    tableRowSevAll.getCell(1).setText(String.valueOf(all));
+                    tableRowSevAll.getCell(2).setText("100");
+
+
+                    for (int x = 0; x < tableIst.getNumberOfRows(); x++) {
+                        XWPFTableRow row = tableIst.getRow(x);
+                        XWPFTableCell cell0 = row.getCell(0);
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
+                        XWPFTableCell cell1 = row.getCell(1);
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                        XWPFTableCell cell2 = row.getCell(2);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                    }
+                }
+
+
+                diagramCount = addDоubleChats(docxModel, soData.categories, soData.valuesA, soData.valuesB,
+                        String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount), diagramCount);
+
+                if (posts.length() == 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s источников по количеству публикаций", tableCount, posts.length()));
+                    tableCount += 1;
+                    XWPFTable tableTop10Own = docxModel.createTable();
+                    XWPFTableRow tableTop10OwnRow = tableTop10Own.getRow(0);
+
+                    XWPFRun run12 = tableTop10OwnRow.getCell(0).getParagraphs().get(0).createRun();
+                    run12.setText("Название источника");
+                    run12.setBold(true);
+
+                    tableTop10OwnRow.addNewTableCell();
+                    XWPFRun run11 = tableTop10OwnRow.getCell(1).getParagraphs().get(0).createRun();
+                    run11.setText("URL");
+                    run11.setBold(true);
+                    tableTop10OwnRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                    tableTop10OwnRow.addNewTableCell();
+                    XWPFRun run13 = tableTop10OwnRow.getCell(2).getParagraphs().get(0).createRun();
+                    run13.setText("Количество публикаций");
+                    run13.setBold(true);
+
+                    JSONObject jsonObject;
+                    for (Object o : posts) {
+                        jsonObject = (JSONObject) o;
+                        getRow(tableTop10Own, jsonObject.get("username").toString(), jsonObject.get("url").toString(),
+                                jsonObject.get("coefficient").toString());
+                    }
+
+
+                    for (int x = 0; x < tableTop10Own.getNumberOfRows(); x++) {
+                        XWPFTableRow row = tableTop10Own.getRow(x);
+                        XWPFTableCell cell0 = row.getCell(0);
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                        XWPFTableCell cell1 = row.getCell(1);
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
+                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        XWPFTableCell cell2 = row.getCell(2);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                    }
+                }
             }
-
-            XWPFParagraph bodyParagraphAudit = docxModel.createParagraph();
-            bodyParagraphAudit.setAlignment(ParagraphAlignment.LEFT);
-            bodyParagraphAudit.setPageBreak(true);
-            bodyParagraphAudit.setStyle("Heading1");
-            XWPFRun paragraphConfigAudit = bodyParagraphAudit.createRun();
-            paragraphConfigAudit.setFontSize(22);
-            paragraphConfigAudit.setBold(true);
-            paragraphConfigAudit.setFontFamily("Arial");
-            paragraphConfigAudit.setText(
-                    "Аудитория"
-            );
-            XWPFParagraph paragraphTypeComDAudit= docxModel.createParagraph();
-            paragraphTypeComDAudit.setStyle("Heading2");
-            paragraphTypeComDAudit.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeDAuditt = paragraphTypeComDAudit.createRun();
-            paragraphConfigTypeDAuditt.setFontSize(12);
-            paragraphConfigTypeDAuditt.setFontFamily("Arial");
-            paragraphConfigTypeDAuditt.setBold(true);
-            paragraphConfigTypeDAuditt.addBreak();
-            paragraphConfigTypeDAuditt.setText(
-                    "Диаграмма 7 Динамика объема аудитории"
-            );
-
-
 
             ParseData auditData = getWeekData(type, (JSONArray) (stat).get("graph_data"), first_month, first_year);
-            addChats(docxModel, auditData.categories, auditData.valuesA);
-
-
-            XWPFParagraph paragraphSex= docxModel.createParagraph();
-            paragraphSex.setStyle("Heading2");
-            paragraphSex.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigSex= paragraphSex.createRun();
-            paragraphConfigSex.setFontSize(12);
-            paragraphConfigSex.setFontFamily("Arial");
-            paragraphConfigSex.setBold(true);
-            paragraphConfigSex.addBreak();
-            paragraphConfigSex.setText(
-                    "Диаграмма 8 Распределение аудитории по полу"
-            );
-
-
             JSONObject sexJson= (JSONObject) ((JSONObject)sex.get("additional_data")).get("sex");
-            addPie(docxModel, new String[]{"Не указан","Мужчины","Женщины"},  new Double[]{new  Double(sexJson.get("u").toString()),
-                    new  Double(sexJson.get("m").toString()), new  Double(sexJson.get("w").toString())});
-
-
-            XWPFParagraph paragraphAge= docxModel.createParagraph();
-            paragraphAge.setStyle("Heading2");
-            paragraphAge.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigAge= paragraphAge.createRun();
-            paragraphConfigAge.setFontSize(12);
-            paragraphConfigAge.setFontFamily("Arial");
-            paragraphConfigAge.setBold(true);
-            paragraphConfigAge.addBreak();
-            paragraphConfigAge.setText(
-                    "Диаграмма 9 Распределение аудитории по возрасту"
-            );
-
-            addPie(docxModel, new String[]{"18-25 лет","26-40 лет","40 лет и старше", "не указан"},
-                    new Double[]{new Double(((JSONObject)age.get("group1")).get("graph").toString()),
-                            new Double(((JSONObject)age.get("group2")).get("graph").toString()),
-                            new Double(((JSONObject)age.get("group3")).get("graph").toString()),
-                            new Double(((JSONObject)age.get("group4")).get("graph").toString())
-                    });
-
-            XWPFParagraph paragraphCity= docxModel.createParagraph();
-            paragraphCity.setPageBreak(true);
-            paragraphCity.setStyle("Heading2");
-            paragraphCity.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigCity = paragraphCity.createRun();
-            paragraphConfigCity.setFontSize(12);
-            paragraphConfigCity.setFontFamily("Arial");
-            paragraphConfigCity.setBold(true);
-
-            paragraphConfigCity.setText(
-                    "Диаграмма 10 Распределение аудитории по геолокации"
-            );
-
             String[] categoriesCity = new String[]{};
             Double[] valuesACity  = new Double[]{};
             double valueCity;
             int i = 0;
-//            int count5 = 0;
             int count10 = 0;
-
+            JSONObject jsonObject;
             for (Object o :  jsonCity) {
                 jsonObject = (JSONObject) o;
                 if (i == 10) {
                     break;
                 }
-//                if (i < 5) {
-//                    count5 += Integer.parseInt(jsonObject.get("users").toString());
-//                }
                 count10 += Integer.parseInt(jsonObject.get("users").toString());
                 i ++;
             }
@@ -681,236 +515,287 @@ class WordWorker {
                 categoriesCity = (String[]) append(categoriesCity, jsonObject.get("city"));
                 valuesACity = append(valuesACity, valueCity );
             }
-            addPieCity(docxModel, categoriesCity, valuesACity);
 
-            XWPFParagraph paragraphTop10City = docxModel.createParagraph();
-            paragraphTop10City.setStyle("Heading2");
-            paragraphTop10City.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTop10city = paragraphTop10City.createRun();
-            paragraphConfigTop10city.setFontSize(12);
-            paragraphConfigTop10city.setFontFamily("Arial");
-            paragraphConfigTop10city.setBold(true);
-            paragraphConfigTop10city.addBreak();
-            paragraphConfigTop10city.setText(
-                    "Таблица 3 Топ-10 городов"
-            );
-
-            XWPFTable tableTop10OCity = docxModel.createTable();
-            XWPFTableRow tableTop10OCityRow = tableTop10OCity.getRow(0);
-            XWPFRun runCity = tableTop10OCityRow.getCell(0).getParagraphs().get(0).createRun();
-            tableTop10OCityRow.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-            runCity.setText("Город");
-            runCity.setBold(true);
-
-            tableTop10OCityRow.addNewTableCell();
-            XWPFRun r9 = tableTop10OCityRow.getCell(1).getParagraphs().get(0).createRun();
-            r9.setText("Количество");
-            r9.setBold(true);
-            tableTop10OCityRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+            double valAudit = 0;
+            double valSex = 0;
+            double valAge= 0;
+            double valCity = 0;
 
 
-            tableTop10OCityRow.addNewTableCell();
-            XWPFRun run10a = tableTop10OCityRow.getCell(2).getParagraphs().get(0).createRun();
-            run10a.setText("%");
-            run10a.setBold(true);
-            tableTop10OCityRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
 
-            try{
-            for (Object o : jsonCity) {
-                jsonObject = (JSONObject) o;
-                getRow(tableTop10OCity, jsonObject.get("city").toString(), jsonObject.get("users").toString(),
-                        String.format("%.1f",Double.parseDouble(jsonObject.get("users").toString())*100.0/Double.valueOf(count10)));
-            }} catch (Exception e) {
-                System.out.println("S");
+            Double[] masSex = new Double[]{new  Double(sexJson.get("u").toString()),
+                    new  Double(sexJson.get("m").toString()), new  Double(sexJson.get("w").toString())};
+
+
+             Double [] masAge = new Double[]{new Double(((JSONObject)age.get("group1")).get("graph").toString()),
+                     new Double(((JSONObject)age.get("group2")).get("graph").toString()),
+                     new Double(((JSONObject)age.get("group3")).get("graph").toString()),
+                     new Double(((JSONObject)age.get("group4")).get("graph").toString())
+             };
+
+            for (Double d:masSex){
+                valSex += d;
+            }
+            for (Double d:auditData.valuesA){
+                valAudit += d;
+            }
+            for (Double d:masAge){
+                valAge += d;
+            }
+            for (Double d:masAge){
+                valCity += d;
             }
 
-            for(int x = 0;x < tableTop10OCity.getNumberOfRows(); x++){
-                XWPFTableRow row000 = tableTop10OCity.getRow(x);
-                XWPFTableCell cell0000 = row000.getCell(0);
-                cell0000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
-                XWPFTableCell cell1000 = row000.getCell(1);
-                cell1000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
-                cell1000.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
-                XWPFTableCell cell2000 = row000.getCell(2);
-                cell2000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2000.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+            if ((valSex != 0) || (valAudit != 0) || (valAge != 0) || (valCity != 0 ) || ( jsonCity.length() != 0)
+                    || (jsonCity.length() != 0) || ((JSONArray) usersJson.get("users")).length() !=0) {
+                XWPFParagraph bodyParagraphAudit = docxModel.createParagraph();
+                bodyParagraphAudit.setAlignment(ParagraphAlignment.LEFT);
+                bodyParagraphAudit.setPageBreak(true);
+                bodyParagraphAudit.setStyle("Heading1");
+                XWPFRun paragraphConfigAudit = bodyParagraphAudit.createRun();
+                paragraphConfigAudit.setFontSize(22);
+                paragraphConfigAudit.setBold(true);
+                paragraphConfigAudit.setFontFamily("Arial");
+                paragraphConfigAudit.setText(
+                        "Аудитория"
+                );
+                entityOnPage = 0;
+                diagramCount = addChats(docxModel, auditData.categories, auditData.valuesA, String.format("Диаграмма %s Динамика объема аудитории", diagramCount), diagramCount);
+
+
+                diagramCount = addPie(docxModel, new String[]{"Не указан", "Мужчины", "Женщины"}, masSex, String.format("Диаграмма %s Распределение аудитории по полу", diagramCount), diagramCount);
+
+
+                diagramCount = addPie(docxModel, new String[]{"18-25 лет", "26-40 лет", "40 лет и старше", "не указан"},
+                        masAge, String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount), diagramCount);
+
+
+                diagramCount = addPieCity(docxModel, categoriesCity, valuesACity, String.format("Диаграмма %s Распределение аудитории по геолокации", diagramCount), diagramCount);
+
+                if (jsonCity.length() == 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s городов", tableCount, jsonCity.length()));
+                    tableCount += 1;
+                    XWPFTable tableTop10OCity = docxModel.createTable();
+                    XWPFTableRow tableTop10OCityRow = tableTop10OCity.getRow(0);
+                    XWPFRun runCity = tableTop10OCityRow.getCell(0).getParagraphs().get(0).createRun();
+                    tableTop10OCityRow.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+                    runCity.setText("Город");
+                    runCity.setBold(true);
+
+                    tableTop10OCityRow.addNewTableCell();
+                    XWPFRun r9 = tableTop10OCityRow.getCell(1).getParagraphs().get(0).createRun();
+                    r9.setText("Количество");
+                    r9.setBold(true);
+                    tableTop10OCityRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+
+                    tableTop10OCityRow.addNewTableCell();
+                    XWPFRun run10a = tableTop10OCityRow.getCell(2).getParagraphs().get(0).createRun();
+                    run10a.setText("%");
+                    run10a.setBold(true);
+                    tableTop10OCityRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                    try {
+                        for (Object o : jsonCity) {
+                            jsonObject = (JSONObject) o;
+                            getRow(tableTop10OCity, jsonObject.get("city").toString(), jsonObject.get("users").toString(),
+                                    String.format("%.1f", Double.parseDouble(jsonObject.get("users").toString()) * 100.0 / Double.valueOf(count10)));
+                        }
+                    } catch (Exception e) {
+                        System.out.println("S");
+                    }
+
+                    for (int x = 0; x < tableTop10OCity.getNumberOfRows(); x++) {
+                        XWPFTableRow row000 = tableTop10OCity.getRow(x);
+                        XWPFTableCell cell0000 = row000.getCell(0);
+                        cell0000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                        XWPFTableCell cell1000 = row000.getCell(1);
+                        cell1000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                        cell1000.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        XWPFTableCell cell2000 = row000.getCell(2);
+                        cell2000.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2000.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                    }
+                }
+
+                if (((JSONArray) usersJson.get("users")).length() == 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s активных пользователей по сумме реакции (лайков, комментариев, репостов)", tableCount, ((JSONArray) usersJson.get("users")).length()));
+                    tableCount += 1;
+                    XWPFTable tableTop10OUser = docxModel.createTable();
+                    XWPFTableRow tableTop10OUserRow = tableTop10OUser.getRow(0);
+                    XWPFRun run8 = tableTop10OUserRow.getCell(0).getParagraphs().get(0).createRun();
+                    tableTop10OUserRow.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+                    run8.setText("Пользователь");
+                    run8.setBold(true);
+
+                    tableTop10OUserRow.addNewTableCell();
+                    XWPFRun run9 = tableTop10OUserRow.getCell(1).getParagraphs().get(0).createRun();
+                    run9.setText("URL");
+                    run9.setBold(true);
+                    tableTop10OUserRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                    tableTop10OUserRow.addNewTableCell();
+                    XWPFRun run10 = tableTop10OUserRow.getCell(2).getParagraphs().get(0).createRun();
+                    run10.setText("Сумма реакции");
+                    run10.setBold(true);
+                    tableTop10OUserRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                    for (Object o : (JSONArray) usersJson.get("users")) {
+                        jsonObject = (JSONObject) o;
+                        getRow(tableTop10OUser, jsonObject.get("name").toString(), jsonObject.get("url").toString(),
+                                jsonObject.get("coefficient").toString());
+                    }
+
+                    for (int x = 0; x < tableTop10OUser.getNumberOfRows(); x++) {
+                        XWPFTableRow row = tableTop10OUser.getRow(x);
+                        XWPFTableCell cell0 = row.getCell(0);
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                        XWPFTableCell cell1 = row.getCell(1);
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
+                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        XWPFTableCell cell2 = row.getCell(2);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                    }
+                }
             }
-
-            XWPFParagraph paragraphTop10User = docxModel.createParagraph();
-            paragraphTop10User.setPageBreak(true);
-            paragraphTop10User.setStyle("Heading2");
-            paragraphTop10User.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTop10User = paragraphTop10User.createRun();
-            paragraphConfigTop10User.setFontSize(12);
-            paragraphConfigTop10User.setFontFamily("Arial");
-            paragraphConfigTop10User.setBold(true);
-            paragraphConfigTop10User.addBreak();
-            paragraphConfigTop10User.setText(
-                    "Таблица 4 Топ-10 активных пользователей по сумме реакции (лайков, комментариев, репостов)"
-            );
-
-            XWPFTable tableTop10OUser = docxModel.createTable();
-            XWPFTableRow tableTop10OUserRow = tableTop10OUser.getRow(0);
-            XWPFRun run8 = tableTop10OUserRow.getCell(0).getParagraphs().get(0).createRun();
-            tableTop10OUserRow.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-            run8.setText("Пользователь");
-            run8.setBold(true);
-
-            tableTop10OUserRow.addNewTableCell();
-            XWPFRun run9 = tableTop10OUserRow.getCell(1).getParagraphs().get(0).createRun();
-            run9.setText("URL");
-            run9.setBold(true);
-            tableTop10OUserRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            tableTop10OUserRow.addNewTableCell();
-            XWPFRun run10 = tableTop10OUserRow.getCell(2).getParagraphs().get(0).createRun();
-            run10.setText("Сумма реакции");
-            run10.setBold(true);
-            tableTop10OUserRow.getCell(2).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            for (Object o : (JSONArray)usersJson.get("users")) {
-                jsonObject = (JSONObject) o;
-                getRow(tableTop10OUser, jsonObject.get("name").toString(), jsonObject.get("url").toString(),
-                        jsonObject.get("coefficient").toString());
-            }
-
-            for(int x = 0;x < tableTop10OUser.getNumberOfRows(); x++){
-                XWPFTableRow row = tableTop10OUser.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
-                XWPFTableCell cell2 = row.getCell(2);
-                cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            }
-
-            XWPFParagraph bodyParagrapKeysP = docxModel.createParagraph();
-            bodyParagrapKeysP.setAlignment(ParagraphAlignment.LEFT);
-            bodyParagrapKeysP.setPageBreak(true);
-            bodyParagrapKeysP.setStyle("Heading1");
-            XWPFRun paragraphConfigKeysP = bodyParagrapKeysP.createRun();
-            paragraphConfigKeysP.setFontSize(22);
-            paragraphConfigKeysP.setBold(true);
-            paragraphConfigKeysP.setFontFamily("Arial");
-            paragraphConfigKeysP.setText(
-                    "Ключевые публикации и комментарии"
-            );
-            XWPFParagraph paragraphTypeKeyPubl= docxModel.createParagraph();
-            paragraphTypeKeyPubl.setStyle("Heading2");
-            paragraphTypeKeyPubl.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeKeyPubl = paragraphTypeKeyPubl.createRun();
-            paragraphConfigTypeKeyPubl.setFontSize(12);
-            paragraphConfigTypeKeyPubl.setFontFamily("Arial");
-            paragraphConfigTypeKeyPubl.setBold(true);
-            paragraphConfigTypeKeyPubl.addBreak();
-            paragraphConfigTypeKeyPubl.setText(
-                    "Таблица 5 Топ-10 публикаций по сумме резонанса"
-            );
-
-
-            XWPFTable tableTop10Post = docxModel.createTable();
-            XWPFTableRow tableTop10PostRow= tableTop10Post.getRow(0);
-
-
-            XWPFRun run15 = tableTop10PostRow.getCell(0).getParagraphs().get(0).createRun();
-            run15.setText("Публикация");
-            run15.setBold(true);
-
-            tableTop10PostRow.addNewTableCell();
-            XWPFRun run16 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
-            run16.setText("URL");
-            run16.setBold(true);
-            tableTop10PostRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            tableTop10PostRow.addNewTableCell();
-            XWPFRun run17 = tableTop10PostRow.getCell(2).getParagraphs().get(0).createRun();
-            run17.setText("Резонанс");
-            run17.setBold(true);
-
-
-            String text;
+            int likesPosts = 0;
+            int likesComment = 0;
 
             for (Object o : postsContent) {
                 jsonObject = (JSONObject) o;
-                text = jsonObject.get("text").toString();
-                if (text.length() >commentsLenght){
-                    text =jsonObject.get("text").toString().substring(0, commentsLenght);
+                if (Integer.parseInt(jsonObject.get("likes").toString()) > 0) {
+                    likesPosts+=1;
                 }
-                getRow(tableTop10Post, text, jsonObject.get("uri").toString(),
-                        String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
-                                Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString())));
-
             }
-            for(int x = 0;x < tableTop10Post.getNumberOfRows(); x++){
-                XWPFTableRow row = tableTop10Post.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
-                XWPFTableCell cell2 = row.getCell(2);
-                cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-
-            }
-            XWPFParagraph paragraphTypeKeyComment = docxModel.createParagraph();
-            paragraphTypeKeyComment.setStyle("Heading2");
-            paragraphTypeKeyComment.setAlignment(ParagraphAlignment.LEFT);
-            XWPFRun paragraphConfigTypeKeyComment = paragraphTypeKeyComment.createRun();
-            paragraphConfigTypeKeyComment.setFontSize(12);
-            paragraphConfigTypeKeyComment.setFontFamily("Arial");
-            paragraphConfigTypeKeyComment.setBold(true);
-            paragraphConfigTypeKeyComment.addBreak();
-            paragraphConfigTypeKeyComment.setText(
-                    "Таблица 6 Топ-10 комментариев к публикациям по сумме лайков"
-            );
-
-
-            XWPFTable tableTop10Comment = docxModel.createTable();
-            XWPFTableRow tableTop10CommentRow = tableTop10Comment.getRow(0);
-            XWPFRun run19 = tableTop10CommentRow.getCell(0).getParagraphs().get(0).createRun();
-            run19.setText("Комментарий");
-            run19.setBold(true);
-
-
-
-
-            tableTop10CommentRow.addNewTableCell();
-            XWPFRun run20 = tableTop10CommentRow.getCell(1).getParagraphs().get(0).createRun();
-            run20.setText("URL");
-            run20.setBold(true);
-            tableTop10CommentRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            tableTop10CommentRow.addNewTableCell();
-            XWPFRun run21 = tableTop10CommentRow.getCell(2).getParagraphs().get(0).createRun();
-            run21.setText("Резонанс");
-            run21.setBold(true);
-
-            for (Object o : commentContent) {
+            for (Object o : postsContent) {
                 jsonObject = (JSONObject) o;
-                text = jsonObject.get("text").toString();
-                if (text.length() >commentsLenght){
-                    text =jsonObject.get("text").toString().substring(0, commentsLenght);
+                if (Integer.parseInt(((JSONObject) o).get("likes").toString()) > 0) {
+                    likesComment+=1;
+                }
+            }
+            for (Object o : commentContent) {
+                if (Integer.parseInt(((JSONObject) o).get("likes").toString()) > 0) {
+                    likesComment+=1;
+                }
+            }
+            if((likesComment !=0) || (likesPosts !=0 )) {
+                XWPFParagraph bodyParagrapKeysP = docxModel.createParagraph();
+                bodyParagrapKeysP.setAlignment(ParagraphAlignment.LEFT);
+                bodyParagrapKeysP.setPageBreak(true);
+                bodyParagrapKeysP.setStyle("Heading1");
+                XWPFRun paragraphConfigKeysP = bodyParagrapKeysP.createRun();
+                paragraphConfigKeysP.setFontSize(22);
+                paragraphConfigKeysP.setBold(true);
+                paragraphConfigKeysP.setFontFamily("Arial");
+                paragraphConfigKeysP.setText(
+                        "Ключевые публикации и комментарии"
+                );
+                entityOnPage =0;
+                if (likesPosts == 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s публикаций по сумме резонанса", tableCount, likesPosts));
+                    tableCount += 1;
+                    XWPFTable tableTop10Post = docxModel.createTable();
+                    XWPFTableRow tableTop10PostRow = tableTop10Post.getRow(0);
+
+
+                    XWPFRun run15 = tableTop10PostRow.getCell(0).getParagraphs().get(0).createRun();
+                    run15.setText("Публикация");
+                    run15.setBold(true);
+
+                    tableTop10PostRow.addNewTableCell();
+                    XWPFRun run16 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
+                    run16.setText("URL");
+                    run16.setBold(true);
+                    tableTop10PostRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                    tableTop10PostRow.addNewTableCell();
+                    XWPFRun run17 = tableTop10PostRow.getCell(2).getParagraphs().get(0).createRun();
+                    run17.setText("Резонанс");
+                    run17.setBold(true);
+
+
+                    String text;
+
+                    for (Object o : postsContent) {
+                        jsonObject = (JSONObject) o;
+                        text = jsonObject.get("text").toString();
+                        if (text.length() > commentsLenght) {
+                            text = jsonObject.get("text").toString().substring(0, commentsLenght);
+                        }
+                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(),
+                                String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
+                                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString())));
+
+                    }
+                    for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
+                        XWPFTableRow row = tableTop10Post.getRow(x);
+                        XWPFTableCell cell0 = row.getCell(0);
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                        XWPFTableCell cell1 = row.getCell(1);
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
+                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        XWPFTableCell cell2 = row.getCell(2);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+                    }
                 }
 
-                getRow(tableTop10Comment, text, jsonObject.get("post_url").toString(),
-                       jsonObject.get("likes").toString());
-            }
+                if (likesComment== 0) {
+                    dataLost(docxModel);
+                } else {
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment));
+                    tableCount += 1;
+                    String text;
+                    XWPFTable tableTop10Comment = docxModel.createTable();
+                    XWPFTableRow tableTop10CommentRow = tableTop10Comment.getRow(0);
+                    XWPFRun run19 = tableTop10CommentRow.getCell(0).getParagraphs().get(0).createRun();
+                    run19.setText("Комментарий");
+                    run19.setBold(true);
 
-            for(int x = 0;x < tableTop10Comment.getNumberOfRows(); x++){
-                XWPFTableRow row = tableTop10Comment.getRow(x);
-                XWPFTableCell cell0 = row.getCell(0);
-                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
-                XWPFTableCell cell1 = row.getCell(1);
-                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
-                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
-                XWPFTableCell cell2 = row.getCell(2);
-                cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
-                cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            }
+                    tableTop10CommentRow.addNewTableCell();
+                    XWPFRun run20 = tableTop10CommentRow.getCell(1).getParagraphs().get(0).createRun();
+                    run20.setText("URL");
+                    run20.setBold(true);
+                    tableTop10CommentRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
 
+                    tableTop10CommentRow.addNewTableCell();
+                    XWPFRun run21 = tableTop10CommentRow.getCell(2).getParagraphs().get(0).createRun();
+                    run21.setText("Резонанс");
+                    run21.setBold(true);
+
+                    for (Object o : commentContent) {
+                        jsonObject = (JSONObject) o;
+                        text = jsonObject.get("text").toString();
+                        if (text.length() > commentsLenght) {
+                            text = jsonObject.get("text").toString().substring(0, commentsLenght);
+                        }
+
+                        getRow(tableTop10Comment, text, jsonObject.get("post_url").toString(),
+                                jsonObject.get("likes").toString());
+                    }
+
+                    for (int x = 0; x < tableTop10Comment.getNumberOfRows(); x++) {
+                        XWPFTableRow row = tableTop10Comment.getRow(x);
+                        XWPFTableCell cell0 = row.getCell(0);
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                        XWPFTableCell cell1 = row.getCell(1);
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
+                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        XWPFTableCell cell2 = row.getCell(2);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                    }
+                }
+            }
             CTP ctp = CTP.Factory.newInstance();
 //this add page number incremental
             ctp.addNewR().addNewPgNum();
@@ -989,10 +874,17 @@ class WordWorker {
     }
 
 
-    private static XWPFDocument addChats(XWPFDocument docxModel, String[] categories, Double[] valuesA ) throws Exception {
-
+    private static int addChats(XWPFDocument docxModel, String[] categories, Double[] valuesA, String name, Integer dia ) throws Exception {
         // create the data
-
+        double val = 0;
+        for (Double d:valuesA){
+            val += d;
+        }
+        if (val <= 0) {
+            return dia;
+        }
+        addParagraph(docxModel, name);
+        dia +=1;
 
         // create the chart
         XWPFChart chart = docxModel.createChart(17 * Units.EMU_PER_CENTIMETER,  6 * Units.EMU_PER_CENTIMETER);
@@ -1071,11 +963,38 @@ class WordWorker {
 //        legend.setPosition(LegendPosition.LEFT);
 //        legend.setOverlay(false);
 
+        return dia;
+    }
+
+    private static XWPFDocument dataLost(XWPFDocument docxModel) {
+//        XWPFParagraph paragraphDinColPubCom = docxModel.createParagraph();
+//        paragraphDinColPubCom.setAlignment(ParagraphAlignment.CENTER);
+//        XWPFRun paragraphConfigDinColPubCom = paragraphDinColPubCom.createRun();
+//        paragraphConfigDinColPubCom.setFontSize(10);
+//        paragraphConfigDinColPubCom.setFontFamily("Arial");
+//        paragraphConfigDinColPubCom.setBold(true);
+//        paragraphConfigDinColPubCom.addBreak();
+//        paragraphConfigDinColPubCom.setText(
+//                "данные отсутвуют"
+//        );
+
         return docxModel;
     }
 
+    private static int addDоubleChats(XWPFDocument docxModel, String[] categories, Double[] valuesA, Double[] valuesB, String name, int dia) throws Exception {
 
-    private static XWPFDocument addDоubleChats(XWPFDocument docxModel, String[] categories, Double[] valuesA, Double[] valuesB ) throws Exception {
+        double val = 0;
+        for (Double d:valuesA){
+            val += d;
+        }
+        for (Double d:valuesB){
+            val += d;
+        }
+        if (val <= 0) {
+            return dia;
+        }
+        addParagraph(docxModel, name);
+        dia +=1;
         XWPFChart chart = docxModel.createChart(17 * Units.EMU_PER_CENTIMETER,  6 * Units.EMU_PER_CENTIMETER);
 
         int numOfPoints = categories.length;
@@ -1152,21 +1071,26 @@ class WordWorker {
 
         XDDFChartLegend legend = chart.getOrAddLegend();
         legend.setPosition(LegendPosition.TOP);
-        legend.setOverlay(true);
+//        legend.setOverlay(true);
 
-        return docxModel;
+        return dia;
     }
 
 
-    private static XWPFDocument addPie(XWPFDocument document,  String[] categories, Double[] valuesA) throws IOException, InvalidFormatException {
-        return addPie( document, categories,  valuesA,  false);
+    private static int addPie(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia) throws IOException, InvalidFormatException {
+        return addPie( document, categories,  valuesA, name, dia, false);
     }
 
-    private static XWPFDocument addPie(XWPFDocument document,  String[] categories, Double[] valuesA, boolean RGB) throws IOException, InvalidFormatException {
-        // create the data
-
-        // create the chart
-
+    private static int addPie(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia, boolean RGB) throws IOException, InvalidFormatException {
+        double val = 0;
+        for (Double d:valuesA){
+            val += d;
+        }
+        if (val <= 0) {
+            return dia;
+        }
+        addParagraph(document,  name);
+        dia+=1;
         XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
 
         int numOfPoints = categories.length;
@@ -1188,10 +1112,10 @@ class WordWorker {
         data.setVaryColors(true);
 //        series.setShowLeaderLines(false);
         series.setTitle("", chart.setSheetTitle("", 1));
-
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDLbls();
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowVal().setVal(false);
-        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLeaderLines().setVal(true);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
@@ -1214,12 +1138,8 @@ class WordWorker {
                 }
             }
         }
-//       chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx().setVal(1);
-//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).(p)
-////                    .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(p+10));
-//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx()  addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(2));
-//                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(3));
-//                        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(4));
+//        if (chart.getCTChart().getAutoTitleDeleted() == null) chart.getCTChart().addNewAutoTitleDeleted();
+//        chart.getCTChart().getAutoTitleDeleted().setVal(false);
         chart.plot(data);
 
 
@@ -1227,10 +1147,10 @@ class WordWorker {
 //        XDDFChartLegend legend = chart.getOrAddLegend();
 //        legend.setPosition(LegPosition.RIGHT);
 //        legend.setOverlay(true);
-        return document;
+        return dia;
     }
 
-    private static XWPFDocument addPieCity(XWPFDocument document,  String[] categories, Double[] valuesA) throws IOException, InvalidFormatException {
+    private static int addPieCity(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia) throws IOException, InvalidFormatException {
         // create the data
 
         // create the chart
@@ -1242,8 +1162,17 @@ class WordWorker {
 
         int numOfPoints = categories.length;
         if (numOfPoints == 0){
-            return document;
+            return dia;
         }
+        double val = 0;
+        for (Double d:valuesA){
+            val += d;
+        }
+        if (val <= 0) {
+            return dia;
+        }
+        addParagraph(document,  name);
+        dia+=1;
         XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 5 * Units.EMU_PER_CENTIMETER);
 
         String categoryDataRange = chart.formatRange(new CellRangeAddress(1, numOfPoints, 0, 0));
@@ -1266,13 +1195,13 @@ class WordWorker {
 
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDLbls();
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowVal().setVal(false);
-        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowPercent().setVal(false);
-
-//            int pointCount = series.getCategoryData().getPointCount();
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLeaderLines().setVal(true);
+                //            int pointCount = series.getCategoryData().getPointCount();
 //            for (int p = 0; p < pointCount; p++) {
 //                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDPt().addNewIdx().setVal(p);
 //                if (p == 1) {
@@ -1302,13 +1231,28 @@ class WordWorker {
 //        XDDFChartLegend legend = chart.getOrAddLegend();
 //        legend.setPosition(LegPosition.RIGHT);
 //        legend.setOverlay(true);
-        return document;
+        return dia;
     }
 
-    private static XWPFDocument addArea(XWPFDocument document, String[] categories,
+    private static int addArea(XWPFDocument document, String[] categories,
     Double[] valuesNegative,
     Double[] valuesPositive,
-    Double[] valuesNetural) throws IOException, InvalidFormatException {
+    Double[] valuesNetural, String name, int dia) throws IOException, InvalidFormatException {
+        double val = 0;
+        for (Double d:valuesNegative){
+            val += d;
+        }
+        for (Double d:valuesPositive){
+            val += d;
+        }
+        for (Double d:valuesNetural){
+            val += d;
+        }
+        if (val <= 0) {
+            return dia;
+        }
+        addParagraph(document,  name);
+        dia+=1;
         XWPFChart chart = document.createChart(17 * Units.EMU_PER_CENTIMETER, 6 * Units.EMU_PER_CENTIMETER);
         // create data sources
         int numOfPoints = categories.length;
@@ -1401,7 +1345,7 @@ class WordWorker {
         legend.setPosition(LegendPosition.TOP);
 //        legend.set
 //        legend.setOverlay(true);
-        return document;
+        return dia;
     }
 
 
@@ -1642,4 +1586,23 @@ class WordWorker {
         }
  }
 
+ private static XWPFDocument addParagraph(XWPFDocument docxModel, String name) {
+
+     XWPFParagraph paragraph = docxModel.createParagraph();
+     paragraph.setStyle("Heading2");
+     if (entityOnPage != 0 && entityOnPage % 3 ==0) {
+        paragraph.setPageBreak(true);
+     }
+     paragraph.setAlignment(ParagraphAlignment.LEFT);
+     XWPFRun paragraphConfig= paragraph.createRun();
+     paragraphConfig.setFontSize(12);
+     paragraphConfig.setFontFamily("Arial");
+     paragraphConfig.setBold(true);
+     paragraphConfig.addBreak();
+     paragraphConfig.setText(
+             name
+     );
+     entityOnPage+=1;
+     return docxModel;
+ }
 }
