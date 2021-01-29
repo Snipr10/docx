@@ -27,10 +27,10 @@ public class LogIn implements HttpHandler {
         exchange.startBlocking();
 
         BufferedReader reader = null;
-        reader = new BufferedReader( new InputStreamReader( exchange.getInputStream( ) ) );
+        reader = new BufferedReader(new InputStreamReader(exchange.getInputStream()));
         StringBuilder json = new StringBuilder();
         String line;
-        while( ( line = reader.readLine( ) ) != null ) {
+        while ((line = reader.readLine()) != null) {
             json.append(line);
         }
         JSONObject jsonObject = new JSONObject(json.toString());
@@ -50,7 +50,7 @@ public class LogIn implements HttpHandler {
 
         String dateFromString =
                 DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateFromReal)
-                .replace(cal.get(Calendar.YEAR) + " г.", "");
+                        .replace(cal.get(Calendar.YEAR) + " г.", "");
         cal.setTime(dateFromReal);
         String yearFrom = String.valueOf(cal.get(Calendar.YEAR));
 
@@ -59,7 +59,7 @@ public class LogIn implements HttpHandler {
         String dateToString =
                 DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateToReal)
                         .replace(year + " г.", "");
-        dateFromReal. toInstant() .toString();
+        dateFromReal.toInstant().toString();
 
         dateFrom += " 00:00:00";
         dateTo += " 23:59:59";
@@ -119,18 +119,24 @@ public class LogIn implements HttpHandler {
         JSONArray jsonArray;
         int total_publication = 0;
 
-        for(Object o: (JSONArray)((JSONObject)jsonPosts.get("total")).get("total")){
+        for (Object o : (JSONArray) ((JSONObject) jsonPosts.get("total")).get("total")) {
             jsonArray = (JSONArray) o;
             total_publication += (int) jsonArray.get(1);
         }
         int total_comment = 0;
         JSONObject jsonComments = getCommentInfo();
-        for(Object o: (JSONArray)(jsonComments).get("total")){
+        for (Object o : (JSONArray) (jsonComments).get("total")) {
             jsonArray = (JSONArray) o;
             total_comment += (int) jsonArray.get(1);
         }
-        DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment);
-        JSONArray postsContent =getPostsContent();
+
+        int total_views = 0;
+        JSONObject views = getStats("views");
+        for (Object o : (JSONArray) (views).get("graph_data")) {
+            total_views += Integer.parseInt(((JSONArray) o).get(1).toString());
+        }
+        DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment, total_views);
+        JSONArray postsContent = getPostsContent();
         JSONArray commentContent = getCommentContent();
         JSONArray posts = getPosts();
         JSONObject stat = getStats();
@@ -142,15 +148,15 @@ public class LogIn implements HttpHandler {
         XWPFDocument docx = WordWorker.createDoc(type, getNameThread(), String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                 data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                 first_month, first_year
-                );
+        );
         final String name = UUID.randomUUID() + ".docx";
         try (FileOutputStream fileOut = new FileOutputStream(name)) {
             docx.write(fileOut);
-            }
+        }
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name+"\"");
+        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"");
         exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
                 "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders()
@@ -160,8 +166,6 @@ public class LogIn implements HttpHandler {
 
         exchange.getResponseHeaders()
                 .put(new HttpString("Content-Transfer-Encoding"), "binary");
-
-
 
 
         exchange.getResponseHeaders()
@@ -186,7 +190,7 @@ public class LogIn implements HttpHandler {
     }
 
 
-    private JSONObject getCommentInfo()throws IOException {
+    private JSONObject getCommentInfo() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/commentTrustDaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -210,10 +214,10 @@ public class LogIn implements HttpHandler {
             }
             res += response.toString();
         }
-        return (JSONObject)(new JSONObject(res)).get("total");
+        return (JSONObject) (new JSONObject(res)).get("total");
     }
 
-    private JSONObject getPostsInfo()throws IOException {
+    private JSONObject getPostsInfo() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/trustdaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -241,6 +245,7 @@ public class LogIn implements HttpHandler {
         return jsonObjects;
 
     }
+
     private Integer getPostsSources() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/content/membersCount");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -267,7 +272,6 @@ public class LogIn implements HttpHandler {
         }
         return (Integer) new JSONObject(res).get("source_count");
     }
-
 
 
 //    private JSONObject getUsers() throws IOException {
@@ -299,7 +303,7 @@ public class LogIn implements HttpHandler {
 //
 //    }
 
-        private JSONObject getUsers() throws IOException {
+    private JSONObject getUsers() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/userlinks ");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -308,7 +312,7 @@ public class LogIn implements HttpHandler {
         connection.setDoOutput(true);
         String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"start\": \"0\", \"limit\": \"10\"}",
-                        thread_id, dateFrom, dateTo);
+                thread_id, dateFrom, dateTo);
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);
@@ -324,11 +328,11 @@ public class LogIn implements HttpHandler {
             }
             res += response.toString();
         }
-         return new JSONObject(res);
+        return new JSONObject(res);
 
     }
 
-    private JSONObject getStats()throws IOException {
+    private JSONObject getStats() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -357,7 +361,7 @@ public class LogIn implements HttpHandler {
 
     }
 
-    private JSONArray getCity()throws IOException {
+    private JSONArray getCity() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/thread/getcitytop");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -385,7 +389,7 @@ public class LogIn implements HttpHandler {
 
     }
 
-    private JSONObject getStats(String type)throws IOException {
+    private JSONObject getStats(String type) throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -394,7 +398,7 @@ public class LogIn implements HttpHandler {
         connection.setDoOutput(true);
         String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"type\":\"%s\"}",
-                thread_id, dateFrom, dateTo,type);
+                thread_id, dateFrom, dateTo, type);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
@@ -416,7 +420,7 @@ public class LogIn implements HttpHandler {
 
     }
 
-    private JSONObject getAge()throws IOException {
+    private JSONObject getAge() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/ages");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -425,7 +429,7 @@ public class LogIn implements HttpHandler {
         connection.setDoOutput(true);
         String jsonInputString = String.format(
 
-        "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"group1_start\":\"18\",\"group1_end\":\"25\",\"group2_start\":\"25\",\"group2_end\":\"40\",\"group3_start\":\"40\",\"group3_end\":\"200\",\"group4_start\":\"0\",\"group4_end\":\"0\"}",
+                "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"group1_start\":\"18\",\"group1_end\":\"25\",\"group2_start\":\"25\",\"group2_end\":\"40\",\"group3_start\":\"40\",\"group3_end\":\"200\",\"group4_start\":\"0\",\"group4_end\":\"0\"}",
                 thread_id, dateFrom, dateTo);
 
         try (OutputStream os = connection.getOutputStream()) {
@@ -444,11 +448,11 @@ public class LogIn implements HttpHandler {
             res += response.toString();
         }
 
-        return (JSONObject)((JSONObject)new JSONObject(res).get("additional_data")).get("age");
+        return (JSONObject) ((JSONObject) new JSONObject(res).get("additional_data")).get("age");
 
     }
 
-    private JSONArray getPosts()throws IOException {
+    private JSONArray getPosts() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/owners_top");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -485,7 +489,7 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString =String.format(
+        String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"limit\":\"10\" ,  " +
                         "\"sort\": {\"type\": \"viewed\",\"order\": \"desc\"}}",
                 thread_id, dateFrom, dateTo);
@@ -516,10 +520,10 @@ public class LogIn implements HttpHandler {
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString =String.format(
+        String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"limit\":\"10\" ,  " +
                         "\"sort\": {\"type\": \"likes\",\"order\": \"desc\"}}",
-        thread_id, dateFrom, dateTo);
+                thread_id, dateFrom, dateTo);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
@@ -540,14 +544,14 @@ public class LogIn implements HttpHandler {
 
     }
 
-    private String getNameThread() throws IOException{
+    private String getNameThread() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/thread/additional_info");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
         connection.setDoOutput(true);
-        String jsonInputString =String.format(
+        String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\"}",
                 thread_id);
         try (OutputStream os = connection.getOutputStream()) {

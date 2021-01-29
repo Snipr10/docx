@@ -176,6 +176,11 @@ class WordWorker {
             run3.setText("Количество комментариев к публикациям, шт.");
             tableRowFour.getCell(1).setText(String.valueOf(data.total_comment));
 
+            XWPFTableRow tableRow4 = table.createRow();
+            XWPFRun run4_1 = tableRow4.getCell(0).getParagraphs().get(0).createRun();
+            run4_1.setText("Количество просмотров, шт.");
+            tableRow4.getCell(1).setText(String.valueOf(data.total_views));
+
             for (int x = 0; x < table.getNumberOfRows(); x++) {
                 XWPFTableRow row = table.getRow(x);
                 XWPFTableCell cell0 = row.getCell(0);
