@@ -10,6 +10,8 @@ import java.io.*;
 import java.net.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class LogIn implements HttpHandler {
@@ -144,12 +146,14 @@ public class LogIn implements HttpHandler {
         JSONObject age = getAge();
         JSONArray jsonCity = getCity();
         JSONObject usersJson = getUsers();
-
-        XWPFDocument docx = WordWorker.createDoc(type, getNameThread(), String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+        String nameThread = getNameThread();
+        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                 data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                 first_month, first_year
         );
-        final String name = UUID.randomUUID() + ".docx";
+        final String name = nameThread + " " + LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + ".docx";
+
         try (FileOutputStream fileOut = new FileOutputStream(name)) {
             docx.write(fileOut);
         }
