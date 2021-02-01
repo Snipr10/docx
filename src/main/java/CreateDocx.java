@@ -230,8 +230,10 @@ class WordWorker {
 
 
             JSONObject jsonPostTotal = ((JSONObject) jsonPosts.get("total"));
-            diagramCount = addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"}, new Double[]{(double) getComment(jsonPostTotal, "netural"),
-                    (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")}, String.format("Диаграмма %s Тональность публикаций", diagramCount), diagramCount, true);
+            Double[] variableDouble  = new Double[]{(double) getComment(jsonPostTotal, "netural"),  (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")};
+
+            diagramCount = addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"},variableDouble,
+                    String.format("Диаграмма %s Тональность публикаций", diagramCount), diagramCount, true);
 
 
             String[] categoriesPostType = new String[]{};
@@ -244,104 +246,110 @@ class WordWorker {
             JSONArray negative = (JSONArray) (jsonPostTotal).get("negative");
             JSONArray totalComments = ((JSONArray) (jsonPostTotal).get("total"));
 
-            double positiveInt;
-            double neturalInt;
-            double negativeInt;
-            double sum;
-            if (type.equals("day")) {
-                for (int i = 0; i < totalComments.length(); i++) {
-                    //            for (int i =0; i<31; i++) {
 
-                    negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
-                    positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
-                    neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
-                    sum = negativeInt + neturalInt + positiveInt;
-                    categoriesPostType = append(categoriesPostType, (String) ((JSONArray) negative.get(i)).get(0));
-                    if (sum == 0) {
-                        valuesNegative = append(valuesNegative, 33d);
-                        // 033
-                        valuesPositive = append(valuesPositive, 33d);
-                        // 033
-                        valuesNetural = append(valuesNetural, 33d);
+            double commnetsCount = 0;
+            for (Double dV: variableDouble) {
+                commnetsCount +=dV;
+            }
+            if (commnetsCount >0) {
+                double positiveInt;
+                double neturalInt;
+                double negativeInt;
+                double sum;
+                if (type.equals("day")) {
+                    for (int i = 0; i < totalComments.length(); i++) {
+                        //            for (int i =0; i<31; i++) {
 
-                    } else {
-                        valuesNegative = append(valuesNegative, (double) Math.round(negativeInt / sum * 100));
-                        // 033
-                        valuesPositive = append(valuesPositive, (double) Math.round(positiveInt / sum * 100));
-                        // 033
-                        valuesNetural = append(valuesNetural, (double) Math.round(neturalInt / sum * 100));
+                        negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
+                        positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
+                        neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
+                        sum = negativeInt + neturalInt + positiveInt;
+                        categoriesPostType = append(categoriesPostType, (String) ((JSONArray) negative.get(i)).get(0));
+                        if (sum == 0) {
+                            valuesNegative = append(valuesNegative, 33d);
+                            // 033
+                            valuesPositive = append(valuesPositive, 33d);
+                            // 033
+                            valuesNetural = append(valuesNetural, 33d);
+
+                        } else {
+                            valuesNegative = append(valuesNegative, (double) Math.round(negativeInt / sum * 100));
+                            // 033
+                            valuesPositive = append(valuesPositive, (double) Math.round(positiveInt / sum * 100));
+                            // 033
+                            valuesNetural = append(valuesNetural, (double) Math.round(neturalInt / sum * 100));
+                        }
+
                     }
-
-                }
-            } else {
-                boolean isContain;
-                long circe = 1;
-                int circeM;
-                int lastDate = 0;
-                if (type.equals("week")) {
-                    circeM = 100;
                 } else {
-                    if (type.equals("month")) {
+                    boolean isContain;
+                    long circe = 1;
+                    int circeM;
+                    int lastDate = 0;
+                    if (type.equals("week")) {
                         circeM = 100;
                     } else {
-                        circeM = 10;
-                    }
-                }
-                for (int i = 0; i < totalComments.length(); i++) {
-
-                    negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
-                    positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
-                    neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
-                    int dateInt = getDate((String) ((JSONArray) negative.get(i)).get(0), type);
-                    if (lastDate != 1 && dateInt == 1 && categoriesPostType.length > 0) {
-                        circe = circe * circeM;
-                    }
-                    String dateSo = String.valueOf(dateInt * circe);
-                    isContain = false;
-                    for (int j = 0; j < categoriesPostType.length; j++) {
-                        if (categoriesPostType[j].equals(dateSo)) {
-                            valuesNegative[j] += negativeInt;
-                            valuesPositive[j] += positiveInt;
-                            valuesNetural[j] += neturalInt;
-                            isContain = true;
-                            break;
+                        if (type.equals("month")) {
+                            circeM = 100;
+                        } else {
+                            circeM = 10;
                         }
                     }
-                    if (!isContain) {
-                        categoriesPostType = append(categoriesPostType, dateSo);
-                        valuesNegative = append(valuesNegative, 100.00 * negativeInt);
-                        // 033
-                        valuesPositive = append(valuesPositive, 100.00 * positiveInt);
-                        // 033
-                        valuesNetural = append(valuesNetural, 100.00 * neturalInt);
-                    }
-                    lastDate = dateInt;
+                    for (int i = 0; i < totalComments.length(); i++) {
 
-                }
-                for (int j = 0; j < categoriesPostType.length; j++) {
-                    if (valuesNegative[j] == 0 && valuesPositive[j] == 0 && valuesNetural[j] == 0) {
-                        valuesNegative[j] = 33d;
-                        valuesPositive[j] = 33d;
-                        valuesNetural[j] = 33d;
-                    } else {
-                        sum = valuesNegative[j] + valuesPositive[j] + valuesNetural[j];
-                        valuesNegative[j] =
-                                (double) Math.round((valuesNegative[j] / sum) * 100.0);
-                        valuesPositive[j] =
-                                (double) Math.round((valuesPositive[j] / sum) * 100.0);
-                        valuesNetural[j] =
-                                (double) Math.round((valuesNetural[j] / sum) * 100.0);
+                        negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
+                        positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
+                        neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
+                        int dateInt = getDate((String) ((JSONArray) negative.get(i)).get(0), type);
+                        if (lastDate != 1 && dateInt == 1 && categoriesPostType.length > 0) {
+                            circe = circe * circeM;
+                        }
+                        String dateSo = String.valueOf(dateInt * circe);
+                        isContain = false;
+                        for (int j = 0; j < categoriesPostType.length; j++) {
+                            if (categoriesPostType[j].equals(dateSo)) {
+                                valuesNegative[j] += negativeInt;
+                                valuesPositive[j] += positiveInt;
+                                valuesNetural[j] += neturalInt;
+                                isContain = true;
+                                break;
+                            }
+                        }
+                        if (!isContain) {
+                            categoriesPostType = append(categoriesPostType, dateSo);
+                            valuesNegative = append(valuesNegative, 100.00 * negativeInt);
+                            // 033
+                            valuesPositive = append(valuesPositive, 100.00 * positiveInt);
+                            // 033
+                            valuesNetural = append(valuesNetural, 100.00 * neturalInt);
+                        }
+                        lastDate = dateInt;
+
                     }
+                    for (int j = 0; j < categoriesPostType.length; j++) {
+                        if (valuesNegative[j] == 0 && valuesPositive[j] == 0 && valuesNetural[j] == 0) {
+                            valuesNegative[j] = 33d;
+                            valuesPositive[j] = 33d;
+                            valuesNetural[j] = 33d;
+                        } else {
+                            sum = valuesNegative[j] + valuesPositive[j] + valuesNetural[j];
+                            valuesNegative[j] =
+                                    (double) Math.round((valuesNegative[j] / sum) * 100.0);
+                            valuesPositive[j] =
+                                    (double) Math.round((valuesPositive[j] / sum) * 100.0);
+                            valuesNetural[j] =
+                                    (double) Math.round((valuesNetural[j] / sum) * 100.0);
+                        }
+                    }
+                    changeWeekString(categoriesPostType, type, first_month, first_year);
                 }
-                changeWeekString(categoriesPostType, type, first_month, first_year);
+
+                diagramCount = addArea(docxModel, categoriesPostType,
+                        valuesNegative,
+                        valuesPositive,
+                        valuesNetural,
+                        String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
             }
-
-            diagramCount= addArea(docxModel, categoriesPostType,
-                    valuesNegative,
-                    valuesPositive,
-                    valuesNetural,
-                    String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
-
             int total_vk = getTotalMedia(jsonPosts, "vk");
             int total_tw = getTotalMedia(jsonPosts, "tw");
             int total_fb = getTotalMedia(jsonPosts, "fb");
@@ -360,7 +368,7 @@ class WordWorker {
                 val += d;
             }
 
-            if ((all != 0) || (val != 0) || jsonCity.length() == 0) {
+            if ((all != 0) || (val != 0) || jsonCity.length() != 0) {
 
                 XWPFParagraph bodyParagraphIst = docxModel.createParagraph();
                 bodyParagraphIst.setPageBreak(true);
