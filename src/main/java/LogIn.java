@@ -186,13 +186,12 @@ public class LogIn implements HttpHandler {
             outputStream.write(buf, 0, c);
             outputStream.flush();
         }
-
-
         outputStream.close();
         inputStream.close();
         file.delete();
         exchange.getResponseSender().send("OK");
     }
+
     public static String convertCyrilic(String message){
         char[] abcCyr =   {' ','а','б','в','г','д','ѓ','е', 'ж','з','ѕ','и','ј','к','л','љ','м','н','њ','о','п','р','с','т', 'ќ','у', 'ф','х','ц','ч','џ','ш', 'А','Б','В','Г','Д','Ѓ','Е', 'Ж','З','Ѕ','И','Ј','К','Л','Љ','М','Н','Њ','О','П','Р','С','Т', 'Ќ', 'У','Ф', 'Х','Ц','Ч','Џ','Ш','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','/','-'};
         String[] abcLat = {" ","a","b","v","g","d","]","e","zh","z","y","i","j","k","l","q","m","n","w","o","p","r","s","t","'","u","f","h", "c",";", "x","{","A","B","V","G","D","}","E","Zh","Z","Y","I","J","K","L","Q","M","N","W","O","P","R","S","T","KJ","U","F","H", "C",":", "X","{", "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","/","-"};
@@ -289,36 +288,6 @@ public class LogIn implements HttpHandler {
         }
         return (Integer) new JSONObject(res).get("source_count");
     }
-
-
-//    private JSONObject getUsers() throws IOException {
-//        URL url = new URL("https://api.glassen-it.com/component/socparser/thread/allmembers");
-//        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//        connection.setRequestMethod("POST");
-//        connection.setRequestProperty("Content-Type", "application/json; utf-8");
-//        connection.setRequestProperty("Accept", "application/json");
-//        connection.setDoOutput(true);
-//        String jsonInputString = String.format(
-//                "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"sources_only\": \"0\", \"limit\": \"10\"}",
-//                        thread_id, dateFrom, dateTo);
-//        try (OutputStream os = connection.getOutputStream()) {
-//            byte[] input = jsonInputString.getBytes("utf-8");
-//            os.write(input, 0, input.length);
-//            os.flush();
-//        }
-//        String res = "";
-//        try (BufferedReader br = new BufferedReader(
-//                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-//            StringBuilder response = new StringBuilder();
-//            String responseLine = null;
-//            while ((responseLine = br.readLine()) != null) {
-//                response.append(responseLine.trim());
-//            }
-//            res += response.toString();
-//        }
-//         return new JSONObject(res);
-//
-//    }
 
     private JSONObject getUsers() throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/stats/userlinks ");

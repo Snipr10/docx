@@ -800,13 +800,13 @@ class WordWorker {
                 }
             }
             CTP ctp = CTP.Factory.newInstance();
-//this add page number incremental
+
             ctp.addNewR().addNewPgNum();
 
             XWPFParagraph codePara = new XWPFParagraph(ctp, docxModel);
             XWPFParagraph[] paragraphs = new XWPFParagraph[1];
             paragraphs[0] = codePara;
-//position of number
+
             codePara.setAlignment(ParagraphAlignment.CENTER);
 
             CTSectPr sectPr = docxModel.getDocument().getBody().addNewSectPr();
@@ -815,11 +815,6 @@ class WordWorker {
             headerFooterPolicy.createFooter(STHdrFtr.DEFAULT, paragraphs);
             CTSectPr sect = docxModel.getDocument().getBody().getSectPr();
             sect.addNewTitlePg();
-            // сохраняем модель docx документа в файл
-//            try (FileOutputStream fileOut = new FileOutputStream("/home/oleg/Documents/test1t.docx")) {
-//                docxModel.write(fileOut);
-//            }
-
             return docxModel;
 
         } catch (Exception e) {
@@ -855,27 +850,6 @@ class WordWorker {
         }
         return res;
     }
-
-    private static CTP createFooterModel(String footerContent) {
-        // создаем футер или нижний колонтитул
-        CTP ctpFooterModel = CTP.Factory.newInstance();
-        CTR ctrFooterModel = ctpFooterModel.addNewR();
-        CTText cttFooter = ctrFooterModel.addNewT();
-
-        cttFooter.setStringValue(footerContent);
-        return ctpFooterModel;
-    }
-
-    private static CTP createHeaderModel(String headerContent) {
-        // создаем хедер или верхний колонтитул
-        CTP ctpHeaderModel = CTP.Factory.newInstance();
-        CTR ctrHeaderModel = ctpHeaderModel.addNewR();
-        CTText cttHeader = ctrHeaderModel.addNewT();
-
-        cttHeader.setStringValue(headerContent);
-        return ctpHeaderModel;
-    }
-
 
     private static int addChats(XWPFDocument docxModel, String[] categories, Double[] valuesA, String name, Integer dia ) throws Exception {
         // create the data
@@ -938,7 +912,6 @@ class WordWorker {
         series.setTitle("", setTitleInDataSheet(chart, "a", 1));
 
 
-//        XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(255, 209, 48));
         XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.CORNFLOWER_BLUE));
 
         XDDFShapeProperties properties = series.getShapeProperties();
@@ -956,16 +929,9 @@ class WordWorker {
         chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
 
 
-        //PERCENTE
 //        chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowPercent()
 
         chart.plot(data);
-
-//        // create legend
-//        XDDFChartLegend legend = chart.getOrAddLegend();
-//        legend.setPosition(LegendPosition.LEFT);
-//        legend.setOverlay(false);
-
         return dia;
     }
 
@@ -1019,9 +985,6 @@ class WordWorker {
 
         XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
         leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
-//        leftAxis.getOrAddMajorGridProperties();
-        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
-        // Else first and last category is exactly on cross points and the bars are only half visible.
         leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
         leftAxis.getOrAddShapeProperties().setLineProperties(lineWhite);
         XDDFSolidFillProperties WHITE_SMOKE = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GRAY));
@@ -1042,7 +1005,6 @@ class WordWorker {
         series2.setTitle("Соцмедиа", null);
 
 
-//        XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(255, 209, 48));
         XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.BLUE_VIOLET));
 
         XDDFShapeProperties properties = series.getShapeProperties();
@@ -1104,12 +1066,6 @@ class WordWorker {
 
         XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesA, valuesDataRangeA, 1);
 
-        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
-        // Else first and last category is exactly on cross points and the bars are only half visible.
-//        Method andPrivateMethod
-//                = XDDFDoughnutChartData.class.XDDFDoughnutChartData(
-//                "privateAnd", boolean.class, boolean.class);
-//        new XDDFDoughnutChartData(1, null);
         XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
         XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
         data.setVaryColors(true);
@@ -1141,22 +1097,14 @@ class WordWorker {
                 }
             }
         }
-//        if (chart.getCTChart().getAutoTitleDeleted() == null) chart.getCTChart().addNewAutoTitleDeleted();
-//        chart.getCTChart().getAutoTitleDeleted().setVal(false);
+
         chart.plot(data);
-
-
-
-//        XDDFChartLegend legend = chart.getOrAddLegend();
-//        legend.setPosition(LegPosition.RIGHT);
-//        legend.setOverlay(true);
         return dia;
     }
 
     private static int addPieCity(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia) throws IOException, InvalidFormatException {
         // create the data
 
-        // create the chart
 
         for (int i=0; i < categories.length; i++) {
             categories[i] += "; " + String.format("%.1f", valuesA[i]) + "%";
@@ -1184,12 +1132,6 @@ class WordWorker {
 
         XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(valuesA, valuesDataRangeA, 1);
 
-        // Set AxisCrossBetween, so the left axis crosses the category axis between the categories.
-        // Else first and last category is exactly on cross points and the bars are only half visible.
-//        Method andPrivateMethod
-//                = XDDFDoughnutChartData.class.XDDFDoughnutChartData(
-//                "privateAnd", boolean.class, boolean.class);
-//        new XDDFDoughnutChartData(1, null);
         XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
         XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
         data.setVaryColors(true);
@@ -1229,11 +1171,6 @@ class WordWorker {
 //                        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(4));
         chart.plot(data);
 
-
-
-//        XDDFChartLegend legend = chart.getOrAddLegend();
-//        legend.setPosition(LegPosition.RIGHT);
-//        legend.setOverlay(true);
         return dia;
     }
 
@@ -1331,7 +1268,6 @@ class WordWorker {
 
         for (int i =0; i < 3; i ++) {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).addNewDLbls();
-//            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowVal().setVal(true);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowPercent().setVal(true);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowLegendKey().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowCatName().setVal(false);
@@ -1344,10 +1280,7 @@ class WordWorker {
         chart.plot(data);
 
         XDDFChartLegend legend = chart.getOrAddLegend();
-//        legend.setPosition(LegendPosition.TOP);
         legend.setPosition(LegendPosition.TOP);
-//        legend.set
-//        legend.setOverlay(true);
         return dia;
     }
 
@@ -1533,8 +1466,6 @@ class WordWorker {
         table.setTopBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "");
         table.setBottomBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "");
         table.setInsideVBorder(XWPFTable.XWPFBorderType.NONE, 0, 0, "");
-
-
     }
 
 
