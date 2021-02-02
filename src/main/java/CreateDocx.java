@@ -18,6 +18,8 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class WordWorker {
     private static  int entityOnPage = 0;
@@ -682,14 +684,9 @@ class WordWorker {
 
             for (Object o : postsContent) {
                 jsonObject = (JSONObject) o;
-                if (Integer.parseInt(jsonObject.get("likes").toString()) > 0) {
+                if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
+                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) > 0) {
                     likesPosts+=1;
-                }
-            }
-            for (Object o : postsContent) {
-                jsonObject = (JSONObject) o;
-                if (Integer.parseInt(((JSONObject) o).get("likes").toString()) > 0) {
-                    likesComment+=1;
                 }
             }
             for (Object o : commentContent) {
@@ -739,10 +736,7 @@ class WordWorker {
 
                     for (Object o : postsContent) {
                         jsonObject = (JSONObject) o;
-                        text = jsonObject.get("text").toString();
-                        if (text.length() > commentsLenght) {
-                            text = jsonObject.get("text").toString().substring(0, commentsLenght);
-                        }
+                        text = updateText(jsonObject.get("text").toString());
                         getRow(tableTop10Post, text, jsonObject.get("uri").toString(),
                                 String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
                                         Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString())));
@@ -787,11 +781,7 @@ class WordWorker {
 
                     for (Object o : commentContent) {
                         jsonObject = (JSONObject) o;
-                        text = jsonObject.get("text").toString();
-                        if (text.length() > commentsLenght) {
-                            text = jsonObject.get("text").toString().substring(0, commentsLenght);
-                        }
-
+                        text = updateText(jsonObject.get("text").toString());
                         getRow(tableTop10Comment, text, jsonObject.get("post_url").toString(),
                                 jsonObject.get("likes").toString());
                     }
@@ -1618,4 +1608,30 @@ class WordWorker {
      entityOnPage+=1;
      return docxModel;
  }
+    private static String updateText(String text){
+        if (text.length() > commentsLenght) {
+            text = updateText(text.substring(0, commentsLenght));
+        }
+        StringBuilder sb = new StringBuilder(text);
+        deleteDataInString(sb, "<span.*?>");
+        deleteDataInString(sb, "</span.*?>");
+        deleteDataInString(sb, "<div.*?>");
+        deleteDataInString(sb, "</div.*?>");
+        return sb.toString();
+    }
+
+    private static StringBuilder deleteDataInString(StringBuilder sb, String reg){
+        Pattern p = Pattern.compile(reg, Pattern.CASE_INSENSITIVE);
+        boolean stop = false;
+        while (!stop)
+        {
+            Matcher m = p.matcher(sb.toString());
+            if (m.find()) {
+                sb.delete(m.start(), m.end());
+            }
+            else
+                stop = true;
+        }
+        return sb;
+    }
 }

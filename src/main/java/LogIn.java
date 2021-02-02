@@ -190,6 +190,7 @@ public class LogIn implements HttpHandler {
 
         outputStream.close();
         inputStream.close();
+        file.delete();
         exchange.getResponseSender().send("OK");
     }
     public static String convertCyrilic(String message){
