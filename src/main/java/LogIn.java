@@ -43,8 +43,8 @@ public class LogIn implements HttpHandler {
         dateTo = params.get("dateTo").getFirst();
         thread_id = params.get("thread_id").getFirst();
         type = params.get("type").getFirst();
-        Date dateFromReal = new SimpleDateFormat("yyyy-MM-dd").parse(dateFrom);
-        Date dateToReal = new SimpleDateFormat("yyyy-MM-dd").parse(dateTo);
+        Date dateFromReal = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateFrom  + " 23:59:59");
+        Date dateToReal = new SimpleDateFormat("yyyy-MM-dd").parse(dateTo+ " 23:59:59");
 
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
         cal.setTime(dateFromReal);
@@ -53,7 +53,7 @@ public class LogIn implements HttpHandler {
 
         String dateFromString =
                 DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateFromReal)
-                        .replace(" г.", " года");
+                        .replace(cal.get(Calendar.YEAR) + " г.", "");
         cal.setTime(dateFromReal);
         String yearFrom = String.valueOf(cal.get(Calendar.YEAR));
 
@@ -149,7 +149,7 @@ public class LogIn implements HttpHandler {
         JSONObject usersJson = getUsers();
         String nameThread = getNameThread();
 
-        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s - %s %s года", dateFromString, dateToString, year),
+        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                 data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                 first_month, first_year
         );
@@ -190,7 +190,7 @@ public class LogIn implements HttpHandler {
         }
         outputStream.close();
         inputStream.close();
-        file.delete();
+//        file.delete();
         exchange.getResponseSender().send("OK");
     }
 

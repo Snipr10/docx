@@ -1417,7 +1417,8 @@ class WordWorker {
     }
     private static Integer getDate(String date, String type) throws ParseException {
         int res;
-        Date dateDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+
+        Date dateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date  + " 23:59:59");
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
         cal.setTime(dateDate);
         if (type.equals("week")){
