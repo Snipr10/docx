@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+
 public class LogIn implements HttpHandler {
     CookieManager cookieManager;
     String dateFrom;
@@ -52,7 +53,7 @@ public class LogIn implements HttpHandler {
 
         String dateFromString =
                 DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateFromReal)
-                        .replace(cal.get(Calendar.YEAR) + " г.", "");
+                        .replace(" г.", " года");
         cal.setTime(dateFromReal);
         String yearFrom = String.valueOf(cal.get(Calendar.YEAR));
 
@@ -147,7 +148,8 @@ public class LogIn implements HttpHandler {
         JSONArray jsonCity = getCity();
         JSONObject usersJson = getUsers();
         String nameThread = getNameThread();
-        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+
+        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s - %s %s года", dateFromString, dateToString, year),
                 data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                 first_month, first_year
         );

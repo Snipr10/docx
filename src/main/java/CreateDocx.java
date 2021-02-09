@@ -1424,7 +1424,7 @@ class WordWorker {
             res = cal.get(Calendar.WEEK_OF_YEAR);
         } else {
             if (type.equals("month")){
-                res = cal.get(Calendar.MONTH);
+                res = cal.get(Calendar.MONTH) + 1;
             } else {
                 res = cal.get(Calendar.MONTH) / 3 + 1;
             }
