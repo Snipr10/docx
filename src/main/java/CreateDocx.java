@@ -1540,15 +1540,16 @@ class WordWorker {
      return docxModel;
  }
     private static String updateText(String text){
-        if (text.length() > commentsLenght) {
-            text = updateText(text.substring(0, commentsLenght));
-        }
         StringBuilder sb = new StringBuilder(text);
         deleteDataInString(sb, "<span.*?>");
         deleteDataInString(sb, "</span.*?>");
         deleteDataInString(sb, "<div.*?>");
         deleteDataInString(sb, "</div.*?>");
-        return sb.toString();
+        String res = sb.toString();
+        if (res.length() > commentsLenght) {
+            res = updateText(res.substring(0, commentsLenght));
+        }
+        return res;
     }
 
     private static StringBuilder deleteDataInString(StringBuilder sb, String reg){
