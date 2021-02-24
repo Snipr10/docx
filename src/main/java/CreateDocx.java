@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.openxmlformats.schemas.drawingml.x2006.chart.CTDLbls;
+import org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.IOException;
@@ -37,7 +39,7 @@ class WordWorker {
         return new CellReference(sheet.getSheetName(), 0, column, true, true);
     }
 
-    static <T> T[] append(T[] arr, T element) {
+    public static <T> T[] append(T[] arr, T element) {
         final int N = arr.length;
         arr = Arrays.copyOf(arr, N + 1);
         arr[N] = element;
@@ -202,6 +204,7 @@ class WordWorker {
             diagramCount= addChats(docxModel, comments.categories, comments.valuesA, String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount), diagramCount);
             String postDate;
 
+            // one function
             JSONArray jsonArray;
             String[] categoriesPost = postData.categories;
             Double[] valuesAPost = postData.valuesA;
@@ -232,16 +235,15 @@ class WordWorker {
 
 
             JSONObject jsonPostTotal = ((JSONObject) jsonPosts.get("total"));
-            Double[] variableDouble  = new Double[]{(double) getComment(jsonPostTotal, "netural"),  (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "negative")};
+            Double[] variableDouble  = new Double[]{(double) getComment(jsonPostTotal, "negative"), (double) getComment(jsonPostTotal, "positive"), (double) getComment(jsonPostTotal, "netural")};
+            Double allComments = variableDouble[0] + variableDouble[1] + variableDouble[2];
+            for ( int i = 0; i < variableDouble.length; i++) {
+                variableDouble[i] = variableDouble[i]/allComments * 100;
+            }
 
-            diagramCount = addPie(docxModel, new String[]{"Нейтральная", "Позитивная", "Негативная"},variableDouble,
+            diagramCount = addPieFormat(docxModel, new String[]{"Негативная", "Позитивная", "Нейтральная"},variableDouble,
                     String.format("Диаграмма %s Тональность публикаций", diagramCount), diagramCount, true);
 
-
-            String[] categoriesPostType = new String[]{};
-            Double[] valuesNegative = new Double[]{};
-            Double[] valuesPositive = new Double[]{};
-            Double[] valuesNetural = new Double[]{};
 
             JSONArray positive = (JSONArray) (jsonPostTotal).get("positive");
             JSONArray netural = (JSONArray) (jsonPostTotal).get("netural");
@@ -254,102 +256,12 @@ class WordWorker {
                 commnetsCount +=dV;
             }
             if (commnetsCount >0) {
-                double positiveInt;
-                double neturalInt;
-                double negativeInt;
-                double sum;
-                if (type.equals("day")) {
-                    for (int i = 0; i < totalComments.length(); i++) {
-                        //            for (int i =0; i<31; i++) {
-
-                        negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
-                        positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
-                        neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
-                        sum = negativeInt + neturalInt + positiveInt;
-                        categoriesPostType = append(categoriesPostType, (String) ((JSONArray) negative.get(i)).get(0));
-                        if (sum == 0) {
-                            valuesNegative = append(valuesNegative, 33d);
-                            // 033
-                            valuesPositive = append(valuesPositive, 33d);
-                            // 033
-                            valuesNetural = append(valuesNetural, 33d);
-
-                        } else {
-                            valuesNegative = append(valuesNegative, (double) Math.round(negativeInt / sum * 100));
-                            // 033
-                            valuesPositive = append(valuesPositive, (double) Math.round(positiveInt / sum * 100));
-                            // 033
-                            valuesNetural = append(valuesNetural, (double) Math.round(neturalInt / sum * 100));
-                        }
-
-                    }
-                } else {
-                    boolean isContain;
-                    long circe = 1;
-                    int circeM;
-                    int lastDate = 0;
-                    if (type.equals("week")) {
-                        circeM = 100;
-                    } else {
-                        if (type.equals("month")) {
-                            circeM = 100;
-                        } else {
-                            circeM = 10;
-                        }
-                    }
-                    for (int i = 0; i < totalComments.length(); i++) {
-
-                        negativeInt = new Double(((JSONArray) negative.get(i)).get(1).toString());
-                        positiveInt = new Double(((JSONArray) positive.get(i)).get(1).toString());
-                        neturalInt = new Double(((JSONArray) netural.get(i)).get(1).toString());
-                        int dateInt = getDate((String) ((JSONArray) negative.get(i)).get(0), type);
-                        if (lastDate != 1 && dateInt == 1 && categoriesPostType.length > 0) {
-                            circe = circe * circeM;
-                        }
-                        String dateSo = String.valueOf(dateInt * circe);
-                        isContain = false;
-                        for (int j = 0; j < categoriesPostType.length; j++) {
-                            if (categoriesPostType[j].equals(dateSo)) {
-                                valuesNegative[j] += negativeInt;
-                                valuesPositive[j] += positiveInt;
-                                valuesNetural[j] += neturalInt;
-                                isContain = true;
-                                break;
-                            }
-                        }
-                        if (!isContain) {
-                            categoriesPostType = append(categoriesPostType, dateSo);
-                            valuesNegative = append(valuesNegative, 100.00 * negativeInt);
-                            // 033
-                            valuesPositive = append(valuesPositive, 100.00 * positiveInt);
-                            // 033
-                            valuesNetural = append(valuesNetural, 100.00 * neturalInt);
-                        }
-                        lastDate = dateInt;
-
-                    }
-                    for (int j = 0; j < categoriesPostType.length; j++) {
-                        if (valuesNegative[j] == 0 && valuesPositive[j] == 0 && valuesNetural[j] == 0) {
-                            valuesNegative[j] = 33d;
-                            valuesPositive[j] = 33d;
-                            valuesNetural[j] = 33d;
-                        } else {
-                            sum = valuesNegative[j] + valuesPositive[j] + valuesNetural[j];
-                            valuesNegative[j] =
-                                    (double) Math.round((valuesNegative[j] / sum) * 100.0);
-                            valuesPositive[j] =
-                                    (double) Math.round((valuesPositive[j] / sum) * 100.0);
-                            valuesNetural[j] =
-                                    (double) Math.round((valuesNetural[j] / sum) * 100.0);
-                        }
-                    }
-                    changeWeekString(categoriesPostType, type, first_month, first_year);
-                }
-
-                diagramCount = addArea(docxModel, categoriesPostType,
-                        valuesNegative,
-                        valuesPositive,
-                        valuesNetural,
+                DataForArea d = new DataForArea(type, totalComments, positive, netural,
+                        negative, first_month, first_year);
+                diagramCount = addArea(docxModel, d.categoriesPostType,
+                        d.valuesNegative,
+                        d.valuesPositive,
+                        d.valuesNetural,
                         String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
             }
             int total_vk = getTotalMedia(jsonPosts, "vk");
@@ -586,7 +498,7 @@ class WordWorker {
                         masAge, String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount), diagramCount);
 
 
-                diagramCount = addPieCity(docxModel, categoriesCity, valuesACity, String.format("Диаграмма %s Распределение аудитории по геолокации", diagramCount), diagramCount);
+                diagramCount = addPieFormat(docxModel, categoriesCity, valuesACity, String.format("Диаграмма %s Распределение аудитории по геолокации", diagramCount), diagramCount, false);
 
                 if (jsonCity.length() == 0) {
                     dataLost(docxModel);
@@ -737,9 +649,8 @@ class WordWorker {
                     for (Object o : postsContent) {
                         jsonObject = (JSONObject) o;
                         text = updateText(jsonObject.get("text").toString());
-                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(),
-                                String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
-                                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString())));
+                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(), res(jsonObject)
+                                );
 
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
@@ -823,8 +734,11 @@ class WordWorker {
         return new XWPFDocument();
 
     }
-
-    private static int getTotalMedia(JSONObject jsonPosts, String key){
+    public static String res(JSONObject jsonObject){
+        return String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
+                Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()));
+    }
+    public static int getTotalMedia(JSONObject jsonPosts, String key){
         int total = 0;
         JSONArray jsonArray;
         for(Object o: (JSONArray)((JSONObject)(jsonPosts).get(key)).get("total")){
@@ -841,7 +755,7 @@ class WordWorker {
         tableRowTwoIst.getCell(2).setText(str3);
     }
 
-    private static int getComment(JSONObject jsonComments, String key) {
+    public static int getComment(JSONObject jsonComments, String key) {
         int res = 0;
         JSONArray jsonArray;
         for (Object o : (JSONArray) (jsonComments).get(key)) {
@@ -927,7 +841,12 @@ class WordWorker {
         chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
         chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(false);
         chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
+        chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.CTR);
 
+        chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewTxPr()
+                .addNewBodyPr().setRot((int)(-90.00 * 60000));
+        chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().getTxPr()
+                .addNewP().addNewPPr().addNewDefRPr();
 
 //        chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(0).getDLbls().addNewShowPercent()
 
@@ -1030,6 +949,12 @@ class WordWorker {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowLegendKey().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowCatName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowSerName().setVal(false);
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.CTR);
+
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewTxPr()
+                    .addNewBodyPr().setRot((int)(-90.00 * 60000));
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().getTxPr()
+                    .addNewP().addNewPPr().addNewDefRPr();
         }
 
         chart.plot(data);
@@ -1079,13 +1004,15 @@ class WordWorker {
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowPercent().setVal(true);
+
         if (RGB) {
+
             int pointCount = series.getCategoryData().getPointCount();
             for (int p = 0; p < pointCount; p++) {
                 chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDPt().addNewIdx().setVal(p);
                 if (p == 1) {
                     chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
-                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(11));
+                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(23));
                 }
                 if (p == 2) {
                     chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
@@ -1093,7 +1020,7 @@ class WordWorker {
                 }
                 if (p == 0) {
                     chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
-                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(23));
+                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(11));
                 }
             }
         }
@@ -1102,12 +1029,13 @@ class WordWorker {
         return dia;
     }
 
-    private static int addPieCity(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia) throws IOException, InvalidFormatException {
+    private static int addPieFormat(XWPFDocument document, String[] categories, Double[] valuesA, String name,
+                                    int dia, boolean RGB) throws IOException, InvalidFormatException {
         // create the data
 
 
         for (int i=0; i < categories.length; i++) {
-            categories[i] += "; " + String.format("%.1f", valuesA[i]) + "%";
+            categories[i] += " " + String.format("%.2f", valuesA[i]) + "% ";
         }
         // create data sources
 
@@ -1134,43 +1062,55 @@ class WordWorker {
 
         XDDFChartData data = chart.createData(ChartTypes.PIE, null, null);
         XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
+
         data.setVaryColors(true);
 //        series.setShowLeaderLines(false);
         series.setTitle("", chart.setSheetTitle("", 1));
 
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDLbls();
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowVal().setVal(false);
+//        if (RGB) {
+//            chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(false);
+//            chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(false);
+//        } else {
+//            chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(true);
+//            chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
+//        }
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLegendKey().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowCatName().setVal(true);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowSerName().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowBubbleSize().setVal(false);
         chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowPercent().setVal(false);
-        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLeaderLines().setVal(true);
-                //            int pointCount = series.getCategoryData().getPointCount();
-//            for (int p = 0; p < pointCount; p++) {
-//                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDPt().addNewIdx().setVal(p);
-//                if (p == 1) {
-//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
-//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(11));
-//                }
-//                if (p == 2) {
-//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
-//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(10));
-//                }
-//                if (p == 0) {
-//                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
-//                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(23));
-//                }
-//            }
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewShowLeaderLines().setVal(false);
+        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().setSeparator("\n");
+//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDLbls().addNewDLblPos().setVal(STDLblPos.Enum.forString("inEnd"));
 
-//       chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx().setVal(1);
-//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).(p)
-////                    .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(p+10));
-//        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewIdx()  addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(2));
-//                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(3));
-//                        chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(4));
+
+        if (RGB) {
+
+            int pointCount = series.getCategoryData().getPointCount();
+            for (int p = 0; p < pointCount; p++) {
+                chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).addNewDPt().addNewIdx().setVal(p);
+                if (p == 1) {
+                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(11));
+                }
+                if (p == 2) {
+                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(23));
+                }
+                if (p == 0) {
+                    chart.getCTChart().getPlotArea().getPieChartArray(0).getSerArray(0).getDPtArray(p)
+                            .addNewSpPr().addNewSolidFill().addNewSrgbClr().setVal(DefaultIndexedColorMap.getDefaultRGB(10));
+                }
+            }
+        }
+
         chart.plot(data);
-
+//        if (RGB) {
+//            XDDFChartLegend legend = chart.getOrAddLegend();
+//            legend.setPosition(LegendPosition.RIGHT);
+//        }
         return dia;
     }
 
@@ -1274,7 +1214,12 @@ class WordWorker {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowSerName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowBubbleSize().setVal(true);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowVal().setVal(true);
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewTxPr()
+                    .addNewBodyPr().setRot((int)(-90.00 * 60000));
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().getTxPr()
+                    .addNewP().addNewPPr().addNewDefRPr();
         }
+
 
         data.setVaryColors(true);
         chart.plot(data);
@@ -1285,7 +1230,7 @@ class WordWorker {
     }
 
 
-    private static ParseData getWeekData(String type, JSONArray jsonTotal, int first_month, int first_year) throws ParseException {
+    public static ParseData getWeekData(String type, JSONArray jsonTotal, int first_month, int first_year) throws ParseException {
         String[] categoriesPost = new String[]{};
         Double[] valuesAPost = new Double[]{};
         JSONArray jsonArray;
@@ -1340,7 +1285,7 @@ class WordWorker {
         return new ParseData(categoriesPost, valuesAPost);
     }
 
-    private static ParseData getWeekDataMedia(String type, JSONObject jsonPosts, int first_month, int first_year) throws ParseException {
+    public static ParseData getWeekDataMedia(String type, JSONObject jsonPosts, int first_month, int first_year) throws ParseException {
         String[] categoriesSoMedia = new String[]{};
             Double[] valuesSo = new Double[]{};
             Double[] valuesMedia = new Double[]{};
@@ -1415,7 +1360,7 @@ class WordWorker {
         }
         return new ParseData(categoriesSoMedia, valuesMedia,valuesSo);
     }
-    private static Integer getDate(String date, String type) throws ParseException {
+    public static Integer getDate(String date, String type) throws ParseException {
         int res;
 
         Date dateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date  + " 23:59:59");
@@ -1432,7 +1377,7 @@ class WordWorker {
         }
         return res;
     }
-    private static String[] changeWeekString(String[] categories, String type, int first_month, int first_year){
+    public static String[] changeWeekString(String[] categories, String type, int first_month, int first_year){
         String dateType;
         if (type.equals("week")) {
             dateType = " неделя";
@@ -1540,7 +1485,7 @@ class WordWorker {
      entityOnPage+=1;
      return docxModel;
  }
-    private static String updateText(String text){
+    public static String updateText(String text){
         StringBuilder sb = new StringBuilder(text);
         deleteDataInString(sb, "<span.*?>");
         deleteDataInString(sb, "</span.*?>");
@@ -1548,7 +1493,7 @@ class WordWorker {
         deleteDataInString(sb, "</div.*?>");
         String res = sb.toString();
         if (res.length() > commentsLenght) {
-            res = updateText(res.substring(0, commentsLenght));
+            res = res.substring(0, commentsLenght);
         }
         return res;
     }
