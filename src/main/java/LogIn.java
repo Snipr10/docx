@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static org.docx4j.org.xhtmlrenderer.pdf.ToPDF.createPDF;
+
 
 public class LogIn implements HttpHandler {
     CookieManager cookieManager;
@@ -148,11 +150,15 @@ public class LogIn implements HttpHandler {
         JSONArray jsonCity = getCity();
         JSONObject usersJson = getUsers();
         String nameThread = getNameThread();
-
+        CreatePDF.createPDF(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+                data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
+                first_month, first_year
+        );
         XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                 data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                 first_month, first_year
         );
+
         final String name = convertCyrilic(nameThread) + " " + LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + ".docx";
 
