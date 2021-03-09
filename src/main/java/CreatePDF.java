@@ -1,30 +1,19 @@
 import com.itextpdf.awt.DefaultFontMapper;
-import com.itextpdf.awt.FontMapper;
 import com.itextpdf.awt.DefaultFontMapper.BaseFontParameters;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
+import com.itextpdf.awt.FontMapper;
+import com.itextpdf.kernel.pdf.PdfOutline;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.navigation.PdfDestination;
+import com.itextpdf.kernel.pdf.navigation.PdfExplicitDestination;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.renderer.DrawContext;
+import com.itextpdf.layout.renderer.IRenderer;
+import com.itextpdf.layout.renderer.TextRenderer;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
-import java.awt.Color;
-import java.awt.FontFormatException;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.Iterator;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -49,6 +38,25 @@ import org.jfree.ui.StandardGradientPaintTransformer;
 import org.jfree.ui.TextAnchor;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import java.io.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+
+import java.util.Iterator;
 
 public class CreatePDF {
     private static String fontUrl = "/home/oleg/Desktop/docx/src/main/resources/arial.ttf";
@@ -60,7 +68,6 @@ public class CreatePDF {
     private static Font fontFrazeBOLD;
     private static Font font;
     private static Font fontFraze;
-
     public CreatePDF() throws IOException, DocumentException {
     }
 
@@ -79,9 +86,16 @@ public class CreatePDF {
         Paragraph paragraphEnter = new Paragraph("\n", FontFactory.getFont(fontUrl, encoding, true, 10.0F));
         Document document = new Document(PageSize.A4, 50.0F, 50.0F, 50.0F, 50.0F);
         PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("ITextTest.pdf"));
+
+        writer.createXmpMetadata();
+        writer.setTagged();
+        writer.setPageEvent(new Header());
+        TOCEvent event = new TOCEvent();
+        writer.setPageEvent(event);
         document.open();
-        Paragraph paragraphTitle = new Paragraph("Базовый отчет", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
-        paragraphTitle.setAlignment(2);
+        String title = "Базовый отчет";
+        Chunk c;
+        Paragraph paragraphTitle = new Paragraph(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));        paragraphTitle.setAlignment(2);
         document.add(paragraphTitle);
         document.add(new Phrase("\n\n\n\n\n\n\n\n"));
         document.add(new Phrase("\n\n\n\n"));
@@ -100,64 +114,52 @@ public class CreatePDF {
         Paragraph paragraphTOB = new Paragraph("Оглавление", FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
         document.add(paragraphTOB);
         document.newPage();
-        Paragraph paragraphBaseStatistic = new Paragraph("Базовые статистики", FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = "Базовые статистики";
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        Paragraph paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         document.add(paragraphEnter);
         PdfPTable table = new PdfPTable(2);
         table.setTotalWidth((float)with);
         table.setLockedWidth(true);
-        PdfPCell cellOne = new PdfPCell(new Phrase("Совокупная аудитория, чел.", fontFraze));
-        cellOne.setHorizontalAlignment(0);
-        cellOne.setFixedHeight(20.0F);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase(String.valueOf(users), fontFraze));
-        cellOne.setHorizontalAlignment(2);
-        cellOne.setFixedHeight(20.0F);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase("Количество источников публикаций, шт.", fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(0);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase(String.valueOf(data.total_sources), fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(2);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase("Количество публикаций, шт.", fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(0);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase(String.valueOf(data.total_publication), fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(2);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase("Количество комментариев к публикациям, шт.", fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(0);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase(String.valueOf(data.total_comment), fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(2);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase("Количество просмотров, шт.", fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(0);
-        table.addCell(cellOne);
-        cellOne = new PdfPCell(new Phrase(String.valueOf(data.total_views), fontFraze));
-        cellOne.setFixedHeight(20.0F);
-        cellOne.setHorizontalAlignment(2);
-        table.addCell(cellOne);
+
+        addCell("Совокупная аудитория, чел.", table, 0);
+        addCell(String.valueOf(users), table, 2);
+
+        addCell("Количество источников публикаций, шт.", table, 0);
+        addCell(String.valueOf(data.total_sources), table, 2);
+
+        addCell("Количество публикаций, шт.", table, 0);
+        addCell(String.valueOf(data.total_publication), table, 2);
+
+        addCell("Количество комментариев к публикациям, шт.", table, 0);
+        addCell(String.valueOf(data.total_comment), table, 2);
+
+        addCell("Количество просмотров, шт.", table, 0);
+        addCell(String.valueOf(data.total_views), table, 2);
+
+
         document.add(table);
+
         document.add(new Phrase("\n"));
         ParseData postData = WordWorker.getWeekData(type, (JSONArray)((JSONObject)jsonPosts.get("total")).get("total"), first_month, first_year);
         int diagramY = 400;
         int tableCount = 1;
-        paragraphBaseStatistic = new Paragraph(String.format("Диаграмма %s Динамика количества публикаций", Integer.valueOf(diagramCount)), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = String.format("Диаграмма %s Динамика количества публикаций", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         AddBar(postData.categories, postData.valuesA, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
         diagramCount = diagramCount + 1;
         ParseData comments = WordWorker.getWeekData(type, (JSONArray)jsonComments.get("total"), first_month, first_year);
-        paragraphBaseStatistic = new Paragraph(String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         AddBar(comments.categories, comments.valuesA, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
@@ -186,8 +188,10 @@ public class CreatePDF {
 
             postCommentData = (Double[])WordWorker.append(postCommentData, postCommentD);
         }
-
-        paragraphBaseStatistic = new Paragraph(String.format("Диаграмма %s Динамика количества комментариев на 1 публикацию", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = String.format("Диаграмма %s Динамика количества комментариев на 1 публикацию", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         AddBar(categoriesPost, postCommentData, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
@@ -195,12 +199,19 @@ public class CreatePDF {
         document.add(paragraphEnter);
         JSONObject jsonPostTotal = (JSONObject)jsonPosts.get("total");
         Double[] variableDouble = new Double[]{(double)WordWorker.getComment(jsonPostTotal, "netural"), (double)WordWorker.getComment(jsonPostTotal, "positive"), (double)WordWorker.getComment(jsonPostTotal, "negative")};
-        paragraphBaseStatistic = new Paragraph(String.format("Диаграмма %s Тональность публикаций", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Тональность публикаций", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         addPie(new String[]{"Нейтральная", "Позитивная", "Негативная"}, variableDouble, writer, diagramY, false, true);
         diagramY = ChangeY(diagramY, document, false);
         ++diagramCount;
-        paragraphBaseStatistic = new Paragraph(String.format("Диаграмма %s Тональность публикаций", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = String.format("Диаграмма %s Тональность публикаци", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphBaseStatistic = new Paragraph(c);
         document.add(paragraphBaseStatistic);
         JSONArray positive = (JSONArray)jsonPostTotal.get("positive");
         JSONArray netural = (JSONArray)jsonPostTotal.get("netural");
@@ -234,13 +245,18 @@ public class CreatePDF {
         for(var57 = 0; var57 < var56; ++var57) {
             val += var55[var57];
         }
-
-        Paragraph paragraphSources = new Paragraph("Источники", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        title = String.format("Источники", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        c.setGenericTag(title);
+        Paragraph paragraphSources = new Paragraph(c);
         document.add(paragraphSources);
         diagramY = 0;
-        paragraphSources = new Paragraph(String.format("Таблица %s Ключевые площадки", Integer.valueOf(tableCount)), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = String.format("Таблица %s Ключевые площадки", tableCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphSources = new Paragraph(c);
         document.add(paragraphSources);
-        document.add(new Phrase(""));
+        document.add(paragraphEnter);
         tableCount = tableCount + 1;
         PdfPTable tableSource = new PdfPTable(3);
         tableSource.setTotalWidth((float)with);
@@ -255,14 +271,23 @@ public class CreatePDF {
         addToTable3(tableSource, "Итог", String.valueOf(all), "100", font);
         document.add(tableSource);
         diagramY = 300;
-        paragraphSources = new Paragraph(String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphSources = new Paragraph(c);
         document.add(paragraphSources);
         addDouble(soData.categories, soData.valuesA, soData.valuesB, writer, diagramY);
         ++diagramCount;
         ChangeY(diagramY, document, false);
         document.newPage();
-        paragraphSources = new Paragraph(String.format("Таблица %s Топ-%s источников по количеству публикаций", tableCount, posts.length()), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Таблица %s Топ-%s источников по количеству публикаций", tableCount, posts.length());
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphSources = new Paragraph(c);
         document.add(paragraphSources);
+        document.add(paragraphEnter);
         tableSource = new PdfPTable(3);
         tableSource.setTotalWidth((float)with);
         tableSource.setLockedWidth(true);
@@ -351,31 +376,56 @@ public class CreatePDF {
         }
 
         document.newPage();
-        Paragraph paragraphAudit = new Paragraph("Аудитория", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        title = "Аудитория";
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        c.setGenericTag(title);
+        Paragraph paragraphAudit = new Paragraph(c);
         document.add(paragraphAudit);
         diagramY = 520;
-        paragraphAudit = new Paragraph(String.format("Диаграмма %s Динамика объема аудитории", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Динамика объема аудитории", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
         document.add(paragraphAudit);
         AddBar(auditData.categories, auditData.valuesA, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
         ++diagramCount;
-        paragraphAudit = new Paragraph(String.format("Диаграмма %s Распределение аудитории по полу", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Распределение аудитории по полу", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
+
         document.add(paragraphAudit);
         addPie(new String[]{"Не указан", "Мужчины", "Женщины"}, masSex, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
         ++diagramCount;
-        paragraphAudit = new Paragraph(String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        title = String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
         document.add(paragraphAudit);
         addPie(new String[]{"18-25 лет", "26-40 лет", "40 лет и старше", "не указан"}, masAge, writer, diagramY);
         diagramY = ChangeY(diagramY, document, false);
         ++diagramCount;
-        paragraphAudit = new Paragraph(String.format("Диаграмма %s Распределение аудитории по геолокаци", diagramCount), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Диаграмма %s Распределение аудитории по геолокаци", diagramCount);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
         document.add(paragraphAudit);
         addPie(categoriesCity, valuesACity, writer, diagramY, true);
         ChangeY(diagramY, document, false);
         ++diagramCount;
-        paragraphAudit = new Paragraph(String.format("Таблица %s Топ-%s городов", tableCount, jsonCity.length()), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Таблица %s Топ-%s городов", tableCount, jsonCity.length());
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
+
         document.add(paragraphAudit);
+        document.add(paragraphEnter);
         PdfPTable tableAudit = new PdfPTable(3);
         tableAudit.setTotalWidth((float)with);
         tableAudit.setLockedWidth(true);
@@ -391,8 +441,14 @@ public class CreatePDF {
         }
 
         document.add(tableAudit);
-        paragraphAudit = new Paragraph(String.format("Таблица %s Топ-%s активных пользователей по сумме реакции (лайков, комментариев, репостов)", tableCount, ((JSONArray)usersJson.get("users")).length()), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Таблица %s Топ-%s активных пользователей по сумме реакции (лайков, комментариев, репостов)", tableCount, ((JSONArray)usersJson.get("users")).length());
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphAudit = new Paragraph(c);
+
         document.add(paragraphAudit);
+        document.add(paragraphEnter);
         tableAudit = new PdfPTable(3);
         tableAudit.setTotalWidth((float)with);
         tableAudit.setLockedWidth(true);
@@ -430,11 +486,22 @@ public class CreatePDF {
         }
 
         document.newPage();
-        Paragraph paragraphPublication = new Paragraph("Ключевые публикации и комментарии", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        title = "Ключевые публикации и комментарии";
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+        c.setGenericTag(title);
+        Paragraph paragraphPublication =  new Paragraph(c);
+
+
         document.add(paragraphPublication);
         diagramY = 0;
-        paragraphPublication = new Paragraph(String.format("Таблица %s Топ-%s публикаций по сумме резонанса", tableCount, likesPosts), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Таблица %s Топ-%s публикаций по сумме резонанса", tableCount, likesPosts);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphPublication =  new Paragraph(c);
+
         document.add(paragraphPublication);
+        document.add(paragraphEnter);
         PdfPTable tablePublication = new PdfPTable(3);
         tablePublication.setTotalWidth((float)with);
         tablePublication.setLockedWidth(true);
@@ -448,12 +515,19 @@ public class CreatePDF {
             o = var80.next();
             jsonObject = (JSONObject)o;
             text = WordWorker.updateText(jsonObject.get("text").toString());
+
             addToTable3(tablePublication, text, jsonObject.get("uri").toString(), WordWorker.res(jsonObject), fontFraze, false);
         }
 
         document.add(tablePublication);
-        paragraphPublication = new Paragraph(String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+
+        title = String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment);
+        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+        c.setGenericTag(title);
+        paragraphPublication =  new Paragraph(c);
+
         document.add(paragraphPublication);
+        document.add(paragraphEnter);
         tablePublication = new PdfPTable(3);
         tablePublication.setTotalWidth((float)with);
         tablePublication.setLockedWidth(true);
@@ -470,8 +544,74 @@ public class CreatePDF {
         }
 
         document.add(tablePublication);
+
+        document.newPage();
+        document.add(new Paragraph("Оглавление", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F)));
+        document.add(paragraphEnter);
+
+        List<SimpleEntry<String, Integer>> entries = event.getTOC();
+        Paragraph p;
+        String nameTOB;
+        String page;
+
+        PdfPTable toc = new PdfPTable(new float[] {10, 1});
+        toc.setTotalWidth((float)with);
+        toc.setLockedWidth(true);
+        toc.deleteBodyRows();
+        String last = null;
+        for (SimpleEntry<String, Integer> entry : entries) {
+            nameTOB = entry.getKey();
+            if ((nameTOB.toLowerCase().contains("диаграмма") || nameTOB.toLowerCase().contains("таблица")) ) {
+                nameTOB = "    " + entry.getKey();
+            }
+            if (!nameTOB.equals(last)) {
+                PdfPCell cellOneSource = new PdfPCell(new Phrase(nameTOB, FontFactory.getFont(fontUrl, encoding, true, 9.0F)));
+                cellOneSource.setHorizontalAlignment(3);
+                cellOneSource.setVerticalAlignment(5);
+                cellOneSource.setBorder(Rectangle.NO_BORDER);
+                toc.addCell(cellOneSource);
+//
+                page = entry.getValue().toString();
+
+                cellOneSource = new PdfPCell(new Phrase(page, FontFactory.getFont(fontUrl, encoding, true, 9.0F)));
+                cellOneSource.setHorizontalAlignment(2);
+                cellOneSource.setVerticalAlignment(5);
+                cellOneSource.setBorder(Rectangle.NO_BORDER);
+                toc.addCell(cellOneSource);
+            }
+            last = nameTOB;
+////            document.add(new Paragraph(entry.getKey(), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F)));
+//активных пользователей по сумме реакции (л
+//            for (i =0; i < 80 - nameTOB.length() - page.length(); i ++){
+//                s.append("_");
+//            }
+//
+//            p = new Paragraph(nameTOB, fontFraze);
+//            p.add(s.toString());
+//            p.add(page);
+//            p.add(dottedLine);
+//            p.add(String.valueOf(entry.getValue()));
+//            document.add(p);
+        }
+        document.setPageCount(2);
+        document.add(toc);
         document.close();
+        PdfReader reader = new PdfReader(new FileInputStream("ITextTest.pdf"));
+
+        int n = reader.getNumberOfPages();
+        reader.selectPages(String.format("1, %d, 3-%d", n, n-1));
+        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream("test.pdf"));
+        stamper.close();
         return "Ok";
+    }
+
+    private static void addCell(String data, PdfPTable table, int alignment){
+        PdfPCell cellOne;
+        cellOne = new PdfPCell(new Phrase(data, fontFraze));
+        cellOne.setFixedHeight(20.0F);
+        cellOne.setHorizontalAlignment(alignment);
+        cellOne.setBorder(2);
+        table.addCell(cellOne);
     }
 
     private static void addToTable3(PdfPTable tableSource, String d1, String d2, String d3, Font font) {
@@ -479,6 +619,7 @@ public class CreatePDF {
     }
 
     private static void addToTable3(PdfPTable tableSource, String d1, String d2, String d3, Font font, boolean isFixed_size) {
+
         PdfPCell cellOneSource = new PdfPCell(new Phrase(d1, font));
         cellOneSource.setHorizontalAlignment(0);
         cellOneSource.setVerticalAlignment(5);
@@ -777,4 +918,93 @@ public class CreatePDF {
         font = FontFactory.getFont(fontUrl, encoding, true, 14.0F);
         fontFraze = FontFactory.getFont(fontUrl, encoding, true, 10.0F);
     }
+
+
+    static class Header extends PdfPageEventHelper {
+        PdfTemplate t;
+        Image total;
+        Font f = FontFactory.getFont(fontUrl, encoding, true, 5.0F);
+
+        @Override
+        public void onOpenDocument(PdfWriter writer, Document document) {
+            t = writer.getDirectContent().createTemplate(30, 16);
+            try {
+                total = Image.getInstance(t);
+                total.setRole(PdfName.ARTIFACT);
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfPTable table = new PdfPTable(3);
+
+            try {
+                if (writer.getPageNumber() > 1) {
+                    table.setWidths(new int[]{24, 24, 2});
+                    table.setTotalWidth(770);
+                    table.getDefaultCell().setFixedHeight(20);
+                    table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+
+                    table.addCell(new Phrase(String.format("Страница: %d", writer.getPageNumber()), f));
+                    table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(new Phrase(String.format("", writer.getPageNumber()), f));
+                    PdfPCell cell = new PdfPCell(total);
+                    cell.setBorder(Rectangle.NO_BORDER);
+                    table.addCell(cell);
+                    PdfContentByte canvas = writer.getDirectContent();
+                    canvas.beginMarkedContentSequence(PdfName.ARTIFACT);
+                    table.writeSelectedRows(0, -1, 36, 30, canvas);
+                    canvas.endMarkedContentSequence();
+                }
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+
+        @Override
+        public void onCloseDocument(PdfWriter writer, Document document) {
+//            PdfPTable table = new PdfPTable(3);
+//
+//            try {
+//                table.setWidths(new int[]{24, 24, 2});
+//            } catch (DocumentException e) {
+//                e.printStackTrace();
+//            }
+//            table.setTotalWidth(770);
+//            table.getDefaultCell().setFixedHeight(20);
+//            table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+//
+//            table.addCell(new Phrase(String.format("Страница: %d", 123), f));
+//            table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+//            table.addCell(new Phrase(String.format("", writer.getPageNumber()), f));
+//            PdfPCell cell = new PdfPCell(total);
+//            cell.setBorder(Rectangle.NO_BORDER);
+//            table.addCell(cell);
+//            PdfContentByte canvas = writer.getDirectContent();
+//            canvas.beginMarkedContentSequence(PdfName.ARTIFACT);
+//            table.writeSelectedRows(0, -1, 36, 30, canvas);
+//            canvas.endMarkedContentSequence();
+
+
+//            ColumnText.showTextAligned(t, Element.ALIGN_LEFT,
+//                    new Phrase(String.valueOf(writer.getPageNumber()), font),
+//                    2, 4, 0);
+        }
+    }
+    public static class TOCEvent extends PdfPageEventHelper {
+
+        protected List<SimpleEntry<String, Integer>> toc = new ArrayList<>();
+
+        @Override
+        public void onGenericTag(PdfWriter writer, Document document, Rectangle rect, String text) {
+            toc.add(new SimpleEntry(text, writer.getPageNumber()));
+        }
+
+        public List getTOC() {
+            return toc;
+        }
+    }
+
 }
