@@ -57,6 +57,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import java.util.Iterator;
+import java.util.UUID;
 
 public class CreatePDF {
     private static String fontUrl = "/home/oleg/Desktop/docx/src/main/resources/arial.ttf";
@@ -71,7 +72,7 @@ public class CreatePDF {
     public CreatePDF() throws IOException, DocumentException {
     }
 
-    public static String createPDF(String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year) throws DocumentException, IOException, ParseException, FontFormatException {
+    public static String createPDF(String docName, String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year) throws DocumentException, IOException, ParseException, FontFormatException {
         DefaultFontMapper mapper = new DefaultFontMapper();
         mapper.insertDirectory(fontUrl);
         BaseFontParameters pp = mapper.getBaseFontParameters("Arial Unicode MS");
@@ -85,7 +86,8 @@ public class CreatePDF {
         int diagramCount = 1;
         Paragraph paragraphEnter = new Paragraph("\n", FontFactory.getFont(fontUrl, encoding, true, 10.0F));
         Document document = new Document(PageSize.A4, 50.0F, 50.0F, 50.0F, 50.0F);
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("ITextTest.pdf"));
+        String paring_name = UUID.randomUUID().toString() + ".pdf";
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(paring_name));
 
         writer.createXmpMetadata();
         writer.setTagged();
@@ -146,24 +148,36 @@ public class CreatePDF {
         ParseData postData = WordWorker.getWeekData(type, (JSONArray)((JSONObject)jsonPosts.get("total")).get("total"), first_month, first_year);
         int diagramY = 400;
         int tableCount = 1;
-        title = String.format("Диаграмма %s Динамика количества публикаций", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphBaseStatistic = new Paragraph(c);
-        document.add(paragraphBaseStatistic);
-        AddBar(postData.categories, postData.valuesA, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        diagramCount = diagramCount + 1;
-        ParseData comments = WordWorker.getWeekData(type, (JSONArray)jsonComments.get("total"), first_month, first_year);
 
-        title = String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphBaseStatistic = new Paragraph(c);
-        document.add(paragraphBaseStatistic);
-        AddBar(comments.categories, comments.valuesA, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
+        double val_test = 0;
+        for (Double d:postData.valuesA){
+            val_test += d;
+        }
+        if (val_test > 0) {
+            title = String.format("Диаграмма %s Динамика количества публикаций", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphBaseStatistic = new Paragraph(c);
+            document.add(paragraphBaseStatistic);
+            AddBar(postData.categories, postData.valuesA, writer, diagramY);
+            diagramY = ChangeY(diagramY, document, false);
+            diagramCount = diagramCount + 1;
+        }
+        ParseData comments = WordWorker.getWeekData(type, (JSONArray)jsonComments.get("total"), first_month, first_year);
+        val_test = 0;
+        for (Double d:comments.valuesA){
+            val_test += d;
+        }
+        if (val_test > 0) {
+            title = String.format("Диаграмма %s Динамика количества комментариев к публикациям", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphBaseStatistic = new Paragraph(c);
+            document.add(paragraphBaseStatistic);
+            AddBar(comments.categories, comments.valuesA, writer, diagramY);
+            diagramY = ChangeY(diagramY, document, false);
+            ++diagramCount;
+        }
         String[] categoriesPost = postData.categories;
         Double[] valuesAPost = postData.valuesA;
         Double[] postCommentData = new Double[0];
@@ -188,39 +202,56 @@ public class CreatePDF {
 
             postCommentData = (Double[])WordWorker.append(postCommentData, postCommentD);
         }
-        title = String.format("Диаграмма %s Динамика количества комментариев на 1 публикацию", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphBaseStatistic = new Paragraph(c);
-        document.add(paragraphBaseStatistic);
-        AddBar(categoriesPost, postCommentData, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
-        document.add(paragraphEnter);
+        val_test = 0;
+        for (Double d:postCommentData){
+            val_test += d;
+        }
+        if (val_test > 0) {
+            title = String.format("Диаграмма %s Динамика количества комментариев на 1 публикацию", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphBaseStatistic = new Paragraph(c);
+            document.add(paragraphBaseStatistic);
+            AddBar(categoriesPost, postCommentData, writer, diagramY);
+            diagramY = ChangeY(diagramY, document, false);
+            ++diagramCount;
+            document.add(paragraphEnter);
+        }
+
         JSONObject jsonPostTotal = (JSONObject)jsonPosts.get("total");
         Double[] variableDouble = new Double[]{(double)WordWorker.getComment(jsonPostTotal, "netural"), (double)WordWorker.getComment(jsonPostTotal, "positive"), (double)WordWorker.getComment(jsonPostTotal, "negative")};
-
-        title = String.format("Диаграмма %s Тональность публикаций", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphBaseStatistic = new Paragraph(c);
-        document.add(paragraphBaseStatistic);
-        addPie(new String[]{"Нейтральная", "Позитивная", "Негативная"}, variableDouble, writer, diagramY, false, true);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
-        title = String.format("Диаграмма %s Тональность публикаци", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphBaseStatistic = new Paragraph(c);
-        document.add(paragraphBaseStatistic);
-        JSONArray positive = (JSONArray)jsonPostTotal.get("positive");
-        JSONArray netural = (JSONArray)jsonPostTotal.get("netural");
-        JSONArray negative = (JSONArray)jsonPostTotal.get("negative");
-        JSONArray totalComments = (JSONArray)jsonPostTotal.get("total");
-        DataForArea d = new DataForArea(type, totalComments, positive, netural, negative, first_month, first_year);
-        addArea(d, writer, diagramY);
-        ChangeY(diagramY, document, false);
-        ++diagramCount;
+        val_test = 0;
+        for (Double d:variableDouble){
+            val_test += d;
+        }
+        if (val_test > 0) {
+            title = String.format("Диаграмма %s Тональность публикаций", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphBaseStatistic = new Paragraph(c);
+            document.add(paragraphBaseStatistic);
+            addPie(new String[]{"Нейтральная", "Позитивная", "Негативная"}, variableDouble, writer, diagramY, false, true);
+            diagramY = ChangeY(diagramY, document, false);
+            ++diagramCount;
+        }
+        for (Double d:variableDouble){
+            val_test += d;
+        }
+        if (val_test > 0) {
+            title = String.format("Диаграмма %s Тональность публикаци", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphBaseStatistic = new Paragraph(c);
+            document.add(paragraphBaseStatistic);
+            JSONArray positive = (JSONArray) jsonPostTotal.get("positive");
+            JSONArray netural = (JSONArray) jsonPostTotal.get("netural");
+            JSONArray negative = (JSONArray) jsonPostTotal.get("negative");
+            JSONArray totalComments = (JSONArray) jsonPostTotal.get("total");
+            DataForArea d = new DataForArea(type, totalComments, positive, netural, negative, first_month, first_year);
+            addArea(d, writer, diagramY);
+            ChangeY(diagramY, document, false);
+            ++diagramCount;
+        }
         document.newPage();
         int total_vk = WordWorker.getTotalMedia(jsonPosts, "vk");
         int total_tw = WordWorker.getTotalMedia(jsonPosts, "tw");
@@ -230,80 +261,79 @@ public class CreatePDF {
         int total_ig = WordWorker.getTotalMedia(jsonPosts, "ig");
         int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig;
         ParseData soData = WordWorker.getWeekDataMedia(type, jsonPosts, first_month, first_year);
-        double val = 0.0D;
-        Double[] var55 = soData.valuesA;
-        int var56 = var55.length;
-
-        int var57;
-        for(var57 = 0; var57 < var56; ++var57) {
-            val += var55[var57];
+        double val = 0;
+        for (Double d:soData.valuesA){
+            val += d;
         }
-
-        var55 = soData.valuesB;
-        var56 = var55.length;
-
-        for(var57 = 0; var57 < var56; ++var57) {
-            val += var55[var57];
+        for (Double d:soData.valuesB){
+            val += d;
         }
-        title = String.format("Источники", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
-        c.setGenericTag(title);
-        Paragraph paragraphSources = new Paragraph(c);
-        document.add(paragraphSources);
-        diagramY = 0;
-        title = String.format("Таблица %s Ключевые площадки", tableCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphSources = new Paragraph(c);
-        document.add(paragraphSources);
-        document.add(paragraphEnter);
-        tableCount = tableCount + 1;
-        PdfPTable tableSource = new PdfPTable(3);
-        tableSource.setTotalWidth((float)with);
-        tableSource.setLockedWidth(true);
-        addToTable3(tableSource, "Площадка", "Количество публикаций, шт.", "   %     ", fontFrazeBOLD);
-        addToTable3(tableSource, "Вконтакте", String.valueOf(total_vk), String.valueOf((double)Math.round((double)((float)total_vk) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "Facebook", String.valueOf(total_fb), String.valueOf((double)Math.round((double)((float)total_fb) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "Twitter", String.valueOf(total_tw), String.valueOf((double)Math.round((double)((float)total_tw) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "Инстаграм", String.valueOf(total_ig), String.valueOf((double)Math.round((double)((float)total_ig) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "Telegram", String.valueOf(total_tg), String.valueOf((double)Math.round((double)((float)total_tg) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "СМИ", String.valueOf(total_gs), String.valueOf((double)Math.round((double)((float)total_gs) * 100.0D / (double)((float)all) * 100.0D) / 100.0D), fontFraze);
-        addToTable3(tableSource, "Итог", String.valueOf(all), "100", font);
-        document.add(tableSource);
-        diagramY = 300;
-
-        title = String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphSources = new Paragraph(c);
-        document.add(paragraphSources);
-        addDouble(soData.categories, soData.valuesA, soData.valuesB, writer, diagramY);
-        ++diagramCount;
-        ChangeY(diagramY, document, false);
-        document.newPage();
-
-        title = String.format("Таблица %s Топ-%s источников по количеству публикаций", tableCount, posts.length());
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphSources = new Paragraph(c);
-        document.add(paragraphSources);
-        document.add(paragraphEnter);
-        tableSource = new PdfPTable(3);
-        tableSource.setTotalWidth((float)with);
-        tableSource.setLockedWidth(true);
-        document.add(new Phrase(""));
-        ++tableCount;
-        addToTable3(tableSource, "Название источника", "    URL   ", "Количество публикаций", fontFrazeBOLD);
-        Iterator var97 = posts.iterator();
-
+        Paragraph paragraphSources;
+        PdfPTable tableSource;
         JSONObject sexJson;
-        while(var97.hasNext()) {
-            Object o = var97.next();
-            sexJson = (JSONObject)o;
-            addToTable3(tableSource, sexJson.get("username").toString(), sexJson.get("url").toString(), sexJson.get("coefficient").toString(), fontFraze);
-        }
+        if ((all != 0) || (val != 0)) {
+            title = String.format("Источники", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+            c.setGenericTag(title);
+            paragraphSources = new Paragraph(c);
+            document.add(paragraphSources);
+            diagramY = 0;
+            title = String.format("Таблица %s Ключевые площадки", tableCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphSources = new Paragraph(c);
+            document.add(paragraphSources);
+            document.add(paragraphEnter);
+            tableCount = tableCount + 1;
+            tableSource = new PdfPTable(3);
+            tableSource.setTotalWidth((float) with);
+            tableSource.setLockedWidth(true);
+            addToTable3(tableSource, "Площадка", "Количество публикаций, шт.", "   %     ", fontFrazeBOLD);
+            addToTable3(tableSource, "Вконтакте", String.valueOf(total_vk), String.valueOf((double) Math.round((double) ((float) total_vk) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "Facebook", String.valueOf(total_fb), String.valueOf((double) Math.round((double) ((float) total_fb) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "Twitter", String.valueOf(total_tw), String.valueOf((double) Math.round((double) ((float) total_tw) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "Инстаграм", String.valueOf(total_ig), String.valueOf((double) Math.round((double) ((float) total_ig) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "Telegram", String.valueOf(total_tg), String.valueOf((double) Math.round((double) ((float) total_tg) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "СМИ", String.valueOf(total_gs), String.valueOf((double) Math.round((double) ((float) total_gs) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "Итог", String.valueOf(all), "100", font);
+            document.add(tableSource);
+            diagramY = 300;
 
-        document.add(tableSource);
+            title = String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount);
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphSources = new Paragraph(c);
+            document.add(paragraphSources);
+            addDouble(soData.categories, soData.valuesA, soData.valuesB, writer, diagramY);
+            ++diagramCount;
+            ChangeY(diagramY, document, false);
+            document.newPage();
+        }
+        if (posts.length() != 0) {
+            title = String.format("Таблица %s Топ-%s источников по количеству публикаций", tableCount, posts.length());
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+            c.setGenericTag(title);
+            paragraphSources = new Paragraph(c);
+            document.add(paragraphSources);
+            document.add(paragraphEnter);
+            tableSource = new PdfPTable(3);
+            tableSource.setTotalWidth((float) with);
+            tableSource.setLockedWidth(true);
+            document.add(new Phrase(""));
+            ++tableCount;
+            addToTable3(tableSource, "Название источника", "    URL   ", "Количество публикаций", fontFrazeBOLD);
+
+            Iterator var97 = posts.iterator();
+
+
+            while (var97.hasNext()) {
+                Object o = var97.next();
+                sexJson = (JSONObject) o;
+                addToTable3(tableSource, sexJson.get("username").toString(), sexJson.get("url").toString(), sexJson.get("coefficient").toString(), fontFraze);
+            }
+
+            document.add(tableSource);
+        }
         ParseData auditData = WordWorker.getWeekData(type, (JSONArray)stat.get("graph_data"), first_month, first_year);
         sexJson = (JSONObject)((JSONObject)sex.get("additional_data")).get("sex");
         String[] categoriesCity = new String[0];
@@ -346,205 +376,221 @@ public class CreatePDF {
         double valCity = 0.0D;
         Double[] masSex = new Double[]{new Double(sexJson.get("u").toString()), new Double(sexJson.get("m").toString()), new Double(sexJson.get("w").toString())};
         Double[] masAge = new Double[]{new Double(((JSONObject)age.get("group1")).get("graph").toString()), new Double(((JSONObject)age.get("group2")).get("graph").toString()), new Double(((JSONObject)age.get("group3")).get("graph").toString()), new Double(((JSONObject)age.get("group4")).get("graph").toString())};
-        Double[] var75 = masSex;
         int likesComment = masSex.length;
-
-        int var77;
-        for(var77 = 0; var77 < likesComment; ++var77) {
-            valSex += var75[var77];
+        for (Double d:masSex){
+            valSex += d;
+        }
+        for (Double d:auditData.valuesA){
+            valAudit += d;
+        }
+        for (Double d:masAge){
+            valAge += d;
+        }
+        for (Double d:masAge){
+            valCity += d;
         }
 
-        var75 = auditData.valuesA;
-        likesComment = var75.length;
 
-        for(var77 = 0; var77 < likesComment; ++var77) {
-            valAudit +=var75[var77];
+        if ((valSex != 0) || (valAudit != 0) || (valAge != 0) || (valCity != 0 ) || ( jsonCity.length() != 0)
+                || (jsonCity.length() != 0) || ((JSONArray) usersJson.get("users")).length() !=0) {
+            Iterator var105;
+            document.newPage();
+            title = "Аудитория";
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+            c.setGenericTag(title);
+            Paragraph paragraphAudit = new Paragraph(c);
+            document.add(paragraphAudit);
+            diagramY = 520;
+
+            val_test = 0;
+            for (Double d:auditData.valuesA){
+                val_test += d;
+            }
+            if (val_test > 0) {
+                title = String.format("Диаграмма %s Динамика объема аудитории", diagramCount);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+                document.add(paragraphAudit);
+                AddBar(auditData.categories, auditData.valuesA, writer, diagramY);
+                diagramY = ChangeY(diagramY, document, false);
+                ++diagramCount;
+            }
+
+            val_test = 0;
+            for (Double d:masSex){
+                val_test += d;
+            }
+            if (val_test > 0) {
+                title = String.format("Диаграмма %s Распределение аудитории по полу", diagramCount);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+
+                document.add(paragraphAudit);
+                addPie(new String[]{"Не указан", "Мужчины", "Женщины"}, masSex, writer, diagramY);
+                diagramY = ChangeY(diagramY, document, false);
+                ++diagramCount;
+            }
+            val_test = 0;
+            for (Double d:masAge){
+                val_test += d;
+            }
+            if (val_test > 0) {
+                title = String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+                document.add(paragraphAudit);
+                addPie(new String[]{"18-25 лет", "26-40 лет", "40 лет и старше", "не указан"}, masAge, writer, diagramY);
+                diagramY = ChangeY(diagramY, document, false);
+                ++diagramCount;
+            }
+            val_test = 0;
+            for (Double d:valuesACity){
+                val_test += d;
+            }
+            if (val_test > 0) {
+                title = String.format("Диаграмма %s Распределение аудитории по геолокаци", diagramCount);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+                document.add(paragraphAudit);
+                addPie(categoriesCity, valuesACity, writer, diagramY, true);
+                ChangeY(diagramY, document, false);
+                ++diagramCount;
+            }
+            PdfPTable tableAudit;
+            if (jsonCity.length() > 0) {
+                title = String.format("Таблица %s Топ-%s городов", tableCount, jsonCity.length());
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+                document.add(paragraphAudit);
+                document.add(paragraphEnter);
+                tableAudit = new PdfPTable(3);
+                tableAudit.setTotalWidth((float) with);
+                tableAudit.setLockedWidth(true);
+                document.add(new Phrase(""));
+                ++tableCount;
+                addToTable3(tableAudit, "Город", "Количество", "%", fontFrazeBOLD);
+                var105 = jsonCity.iterator();
+
+                while (var105.hasNext()) {
+                    o = var105.next();
+                    jsonObject = (JSONObject) o;
+                    addToTable3(tableAudit, jsonObject.get("city").toString(), jsonObject.get("users").toString(), String.format("%.1f", Double.parseDouble(jsonObject.get("users").toString()) * 100.0D / Double.valueOf((double) count10)), fontFraze);
+                }
+
+                document.add(tableAudit);
+            }
+            if (((JSONArray) usersJson.get("users")).length() > 0) {
+                title = String.format("Таблица %s Топ-%s активных пользователей по сумме реакции (лайков, комментариев, репостов)", tableCount, ((JSONArray) usersJson.get("users")).length());
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphAudit = new Paragraph(c);
+
+                document.add(paragraphAudit);
+                document.add(paragraphEnter);
+                tableAudit = new PdfPTable(3);
+                tableAudit.setTotalWidth((float) with);
+                tableAudit.setLockedWidth(true);
+                document.add(new Phrase(""));
+                ++tableCount;
+                addToTable3(tableAudit, "Пользователь", "URL", "Сумма реакции", fontFrazeBOLD);
+                var105 = ((JSONArray) usersJson.get("users")).iterator();
+
+                while (var105.hasNext()) {
+                    o = var105.next();
+                    jsonObject = (JSONObject) o;
+                    addToTable3(tableAudit, jsonObject.get("name").toString(), jsonObject.get("url").toString(), jsonObject.get("coefficient").toString(), fontFraze);
+                }
+
+                document.add(tableAudit);
+            }
+
+
         }
-
-        var75 = masAge;
-        likesComment = masAge.length;
-
-        for(var77 = 0; var77 < likesComment; ++var77) {
-            valAge += var75[var77];
-        }
-
-        var75 = masAge;
-        likesComment = masAge.length;
-
-        for(var77 = 0; var77 < likesComment; ++var77) {
-            valCity +=var75[var77];
-        }
-
-        document.newPage();
-        title = "Аудитория";
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
-        c.setGenericTag(title);
-        Paragraph paragraphAudit = new Paragraph(c);
-        document.add(paragraphAudit);
-        diagramY = 520;
-
-        title = String.format("Диаграмма %s Динамика объема аудитории", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-        document.add(paragraphAudit);
-        AddBar(auditData.categories, auditData.valuesA, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
-
-        title = String.format("Диаграмма %s Распределение аудитории по полу", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-
-        document.add(paragraphAudit);
-        addPie(new String[]{"Не указан", "Мужчины", "Женщины"}, masSex, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
-        title = String.format("Диаграмма %s Распределение аудитории по возрасту", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-        document.add(paragraphAudit);
-        addPie(new String[]{"18-25 лет", "26-40 лет", "40 лет и старше", "не указан"}, masAge, writer, diagramY);
-        diagramY = ChangeY(diagramY, document, false);
-        ++diagramCount;
-
-        title = String.format("Диаграмма %s Распределение аудитории по геолокаци", diagramCount);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-        document.add(paragraphAudit);
-        addPie(categoriesCity, valuesACity, writer, diagramY, true);
-        ChangeY(diagramY, document, false);
-        ++diagramCount;
-
-        title = String.format("Таблица %s Топ-%s городов", tableCount, jsonCity.length());
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-
-        document.add(paragraphAudit);
-        document.add(paragraphEnter);
-        PdfPTable tableAudit = new PdfPTable(3);
-        tableAudit.setTotalWidth((float)with);
-        tableAudit.setLockedWidth(true);
-        document.add(new Phrase(""));
-        ++tableCount;
-        addToTable3(tableAudit, "Город", "Количество", "%", fontFrazeBOLD);
-        Iterator var105 = jsonCity.iterator();
-
-        while(var105.hasNext()) {
-            o = var105.next();
-            jsonObject = (JSONObject)o;
-            addToTable3(tableAudit, jsonObject.get("city").toString(), jsonObject.get("users").toString(), String.format("%.1f", Double.parseDouble(jsonObject.get("users").toString()) * 100.0D / Double.valueOf((double)count10)), fontFraze);
-        }
-
-        document.add(tableAudit);
-
-        title = String.format("Таблица %s Топ-%s активных пользователей по сумме реакции (лайков, комментариев, репостов)", tableCount, ((JSONArray)usersJson.get("users")).length());
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphAudit = new Paragraph(c);
-
-        document.add(paragraphAudit);
-        document.add(paragraphEnter);
-        tableAudit = new PdfPTable(3);
-        tableAudit.setTotalWidth((float)with);
-        tableAudit.setLockedWidth(true);
-        document.add(new Phrase(""));
-        ++tableCount;
-        addToTable3(tableAudit, "Пользователь", "URL", "Сумма реакции", fontFrazeBOLD);
-        var105 = ((JSONArray)usersJson.get("users")).iterator();
-
-        while(var105.hasNext()) {
-            o = var105.next();
-            jsonObject = (JSONObject)o;
-            addToTable3(tableAudit, jsonObject.get("name").toString(), jsonObject.get("url").toString(), jsonObject.get("coefficient").toString(), fontFraze);
-        }
-
-        document.add(tableAudit);
         int likesPosts = 0;
         likesComment = 0;
-        var105 = postsContent.iterator();
-
-        while(var105.hasNext()) {
-            o = var105.next();
-            jsonObject = (JSONObject)o;
-            if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) + Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) > 0) {
-                ++likesPosts;
+        for (Object o1 : postsContent) {
+            jsonObject = (JSONObject) o1;
+            if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
+                    Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) > 0) {
+                likesPosts+=1;
             }
         }
-
-        var105 = commentContent.iterator();
-
-        while(var105.hasNext()) {
-            o = var105.next();
-            if (Integer.parseInt(((JSONObject)o).get("likes").toString()) > 0) {
-                ++likesComment;
+        for (Object o2 : commentContent) {
+            if (Integer.parseInt(((JSONObject) o2).get("likes").toString()) > 0) {
+                likesComment+=1;
             }
         }
+        if((likesComment !=0) || (likesPosts !=0 )) {
+            document.newPage();
+            title = "Ключевые публикации и комментарии";
+            c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
+            c.setGenericTag(title);
+            Paragraph paragraphPublication = new Paragraph(c);
 
-        document.newPage();
-        title = "Ключевые публикации и комментарии";
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
-        c.setGenericTag(title);
-        Paragraph paragraphPublication =  new Paragraph(c);
+
+            document.add(paragraphPublication);
+            diagramY = 0;
+            PdfPTable tablePublication;
+            Iterator var80;
+            String text;
+            if (likesPosts >= 0) {
+                title = String.format("Таблица %s Топ-%s публикаций по сумме резонанса", tableCount, likesPosts);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphPublication = new Paragraph(c);
+
+                document.add(paragraphPublication);
+                document.add(paragraphEnter);
+                tablePublication = new PdfPTable(3);
+                tablePublication.setTotalWidth((float) with);
+                tablePublication.setLockedWidth(true);
+                document.add(new Phrase(""));
+                ++tableCount;
+                addToTable3(tablePublication, "Публикация", "URL", "Резонанс", fontFrazeBOLD);
+                var80 = postsContent.iterator();
 
 
-        document.add(paragraphPublication);
-        diagramY = 0;
+                while (var80.hasNext()) {
+                    o = var80.next();
+                    jsonObject = (JSONObject) o;
+                    text = WordWorker.updateText(jsonObject.get("text").toString());
 
-        title = String.format("Таблица %s Топ-%s публикаций по сумме резонанса", tableCount, likesPosts);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphPublication =  new Paragraph(c);
+                    addToTable3(tablePublication, text, jsonObject.get("uri").toString(), WordWorker.res(jsonObject), fontFraze, false);
+                }
 
-        document.add(paragraphPublication);
-        document.add(paragraphEnter);
-        PdfPTable tablePublication = new PdfPTable(3);
-        tablePublication.setTotalWidth((float)with);
-        tablePublication.setLockedWidth(true);
-        document.add(new Phrase(""));
-        ++tableCount;
-        addToTable3(tablePublication, "Публикация", "URL", "Резонанс", fontFrazeBOLD);
-        Iterator var80 = postsContent.iterator();
+                document.add(tablePublication);
+            }
+            if (likesComment> 0) {
+                title = String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment);
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c.setGenericTag(title);
+                paragraphPublication = new Paragraph(c);
 
-        String text;
-        while(var80.hasNext()) {
-            o = var80.next();
-            jsonObject = (JSONObject)o;
-            text = WordWorker.updateText(jsonObject.get("text").toString());
+                document.add(paragraphPublication);
+                document.add(paragraphEnter);
+                tablePublication = new PdfPTable(3);
+                tablePublication.setTotalWidth((float) with);
+                tablePublication.setLockedWidth(true);
+                document.add(new Phrase(""));
+                ++tableCount;
+                addToTable3(tablePublication, "Комментарий", "URL", "Резонанс", fontFrazeBOLD);
+                var80 = commentContent.iterator();
 
-            addToTable3(tablePublication, text, jsonObject.get("uri").toString(), WordWorker.res(jsonObject), fontFraze, false);
+                while (var80.hasNext()) {
+                    o = var80.next();
+                    jsonObject = (JSONObject) o;
+                    text = WordWorker.updateText(jsonObject.get("text").toString());
+                    addToTable3(tablePublication, text, jsonObject.get("post_url").toString(), jsonObject.get("likes").toString(), fontFraze, false);
+                }
+
+                document.add(tablePublication);
+            }
         }
-
-        document.add(tablePublication);
-
-        title = String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment);
-        c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
-        c.setGenericTag(title);
-        paragraphPublication =  new Paragraph(c);
-
-        document.add(paragraphPublication);
-        document.add(paragraphEnter);
-        tablePublication = new PdfPTable(3);
-        tablePublication.setTotalWidth((float)with);
-        tablePublication.setLockedWidth(true);
-        document.add(new Phrase(""));
-        ++tableCount;
-        addToTable3(tablePublication, "Комментарий", "URL", "Резонанс", fontFrazeBOLD);
-        var80 = commentContent.iterator();
-
-        while(var80.hasNext()) {
-            o = var80.next();
-            jsonObject = (JSONObject)o;
-            text = WordWorker.updateText(jsonObject.get("text").toString());
-            addToTable3(tablePublication, text, jsonObject.get("post_url").toString(), jsonObject.get("likes").toString(), fontFraze, false);
-        }
-
-        document.add(tablePublication);
-
         document.newPage();
         document.add(new Paragraph("Оглавление", FontFactory.getFont(fontUrlBold, encoding, true, 22.0F)));
         document.add(paragraphEnter);
@@ -580,29 +626,24 @@ public class CreatePDF {
                 toc.addCell(cellOneSource);
             }
             last = nameTOB;
-////            document.add(new Paragraph(entry.getKey(), FontFactory.getFont(fontUrlBold, encoding, true, 14.0F)));
-//активных пользователей по сумме реакции (л
-//            for (i =0; i < 80 - nameTOB.length() - page.length(); i ++){
-//                s.append("_");
-//            }
-//
-//            p = new Paragraph(nameTOB, fontFraze);
-//            p.add(s.toString());
-//            p.add(page);
-//            p.add(dottedLine);
-//            p.add(String.valueOf(entry.getValue()));
-//            document.add(p);
+
         }
         document.setPageCount(2);
         document.add(toc);
         document.close();
-        PdfReader reader = new PdfReader(new FileInputStream("ITextTest.pdf"));
-
+        File parsingFile = new File(paring_name);
+        PdfReader reader = new PdfReader(new FileInputStream(parsingFile));
         int n = reader.getNumberOfPages();
         reader.selectPages(String.format("1, %d, 3-%d", n, n-1));
-        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream("test.pdf"));
+        String fullName= docName + ".pdf";
+        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(fullName));
         stamper.close();
-        return "Ok";
+        try {
+            parsingFile.delete();
+        } catch (Exception e){
+            System.out.println("can not delete file");
+        }
+        return fullName;
     }
 
     private static void addCell(String data, PdfPTable table, int alignment){

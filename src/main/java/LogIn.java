@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static org.docx4j.org.xhtmlrenderer.pdf.ToPDF.createPDF;
 
 
 public class LogIn implements HttpHandler {
@@ -150,25 +149,41 @@ public class LogIn implements HttpHandler {
         JSONArray jsonCity = getCity();
         JSONObject usersJson = getUsers();
         String nameThread = getNameThread();
-        CreatePDF.createPDF(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
-                data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                first_month, first_year
-        );
-        XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
-                data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                first_month, first_year
-        );
+        String fullName = convertCyrilic(nameThread) + " " + LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        String format;
+        try {
+            format = params.get("format").getFirst();
 
-        final String name = convertCyrilic(nameThread) + " " + LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + ".docx";
+        } catch (NullPointerException e) {
+            format = "word";
+        }
 
-        try (FileOutputStream fileOut = new FileOutputStream(name)) {
+        if (format.equals("pdf")) {
+            fullName = CreatePDF.createPDF(fullName, type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+                    data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
+                    first_month, first_year
+            );
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
+                    "application/pdf");
+        } else {
+            XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+                    data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
+                    first_month, first_year
+            );
+
+            fullName = fullName + ".docx";
+
+        try (FileOutputStream fileOut = new FileOutputStream(fullName)) {
             docx.write(fileOut);
+        }
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         }
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"");
+        exchange.getResponseHeaders().put(Headers.CONTENT_DISPOSITION, "attachment; filename=\"" + fullName + "\"");
         exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
                 "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders()
@@ -182,7 +197,7 @@ public class LogIn implements HttpHandler {
 
         exchange.getResponseHeaders()
                 .put(new HttpString("Pragma"), "public");
-        final File file = new File(name);
+        final File file = new File(fullName);
         final OutputStream outputStream = exchange.getOutputStream();
         final InputStream inputStream = new FileInputStream(file);
         int length = inputStream.available();
