@@ -37,6 +37,9 @@ dependencies {
     implementation group: 'com.itextpdf', name: 'kernel', version: '7.1.2'
     implementation group: 'com.itextpdf', name: 'layout', version: '7.0.0'
 
+    // https://mvnrepository.com/artifact/org.openjfx/javafx
+    implementation group: 'org.openjfx', name: 'javafx', version: '11', ext: 'pom'
+
 
 
 //

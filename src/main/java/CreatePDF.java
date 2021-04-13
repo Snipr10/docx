@@ -29,6 +29,7 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.GroupedStackedBarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -722,25 +723,39 @@ public class CreatePDF {
         jFreeChart.getPlot().setBackgroundPaint(Color.WHITE);
         CategoryPlot plot = jFreeChart.getCategoryPlot();
         plot.setOutlinePaint((Paint)null);
-        plot.setRangeGridlinePaint(Color.GRAY);
+        plot.setRangeGridlinePaint(new Color(240, 240, 240));
+//        plot.setRangeGridlinePaint(Color.BLACK);
+        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+//        plot.setRangeGridlineStroke(new BasicStroke(0.1f));
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(new Color(240, 240, 240));
+        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+
         CategoryAxis categoryAxis = plot.getDomainAxis();
         categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-        categoryAxis.setAxisLinePaint(Color.WHITE);
+//        categoryAxis.setAxisLinePaint(Color.WHITE);
+        categoryAxis.setAxisLinePaint(Color.BLACK);
+
         categoryAxis.setTickLabelPaint(Color.BLACK);
         ValueAxis valueAxis = plot.getRangeAxis();
         valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
         valueAxis.setTickLabelPaint(Color.BLACK);
-        valueAxis.setAxisLinePaint(Color.WHITE);
+//        valueAxis.setAxisLinePaint(Color.WHITE);
+        valueAxis.setAxisLinePaint(Color.BLACK);
+
         BarRenderer render = (BarRenderer)plot.getRenderer();
-        render.setSeriesPaint(0, new Color(49151, false));
-        render.setMaximumBarWidth(0.05D);
+//        render.setSeriesPaint(0, new Color(49151, false));
+//        render.setMaximumBarWidth(0.05D);
+        render.setMaximumBarWidth(0.010D);
+        render.setBarPainter(new StandardBarPainter());
+
         render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelsVisible(1, true);
         render.setBaseItemLabelsVisible(true);
-        render.setBaseSeriesVisible(true);
+//        render.setBaseSeriesVisible(true);
         render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 5));
-        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
-        render.setBasePositiveItemLabelPosition(position);
+//        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
+//        render.setBasePositiveItemLabelPosition(position);
         jFreeChart.draw(graphics2d, rectangle2d);
         graphics2d.dispose();
         pdfContentByte.addTemplate(pdfTemplate, 40.0F, (float)diagramY);
