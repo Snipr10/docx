@@ -1,12 +1,7 @@
-plugins {
-    id 'org.springframework.boot' version '2.4.1'
-    id 'java'
-    id 'war'
-
-}
+apply plugin: 'java'
 apply plugin:'application'
-mainClassName = 'Main'
 
+mainClassName = 'Main'
 group 'org.example'
 version '1.0-SNAPSHOT'
 
@@ -17,14 +12,6 @@ repositories {
 }
 
 dependencies {
-
-//    compile("org.springframework.boot:spring-boot-starter-web") {
-//        exclude module: "spring-boot-starter-tomcat"
-//    }
-//    compile("org.springframework.boot:spring-boot-starter-undertow")
-
-
-    // https://mvnrepository.com/artifact/org.json/json
     compile group: 'org.json', name: 'json', version: '20090211'
 //    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '5.0.0'
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
@@ -49,6 +36,7 @@ dependencies {
 
     implementation group: 'com.itextpdf', name: 'kernel', version: '7.1.2'
     implementation group: 'com.itextpdf', name: 'layout', version: '7.0.0'
+
 
 
 //
