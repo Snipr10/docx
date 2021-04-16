@@ -50,7 +50,7 @@ import java.util.UUID;
 
 
 public class CreatePDF {
-    private static String fontUrl = "/home/oleg/Desktop/docx/src/main/resources/arial.ttf";
+    private static String fontUrl = "arial.ttf";
     private static BaseFont fontRegular;
     private static FontMapper fontMapper;
     private static String fontUrlBold;
@@ -1053,8 +1053,8 @@ public class CreatePDF {
                 return CreatePDF.fontRegular;
             }
         };
-        fontUrlBold = "/home/oleg/Desktop/docx/src/main/resources/arialbd.ttf";
-        fontUrlRus = "/home/oleg/Desktop/docx/src/main/resources/ofont.ru_Arial Cyr.ttf";
+        fontUrlBold = "arialbd.ttf";
+        fontUrlRus = "ofont.ru_Arial Cyr.ttf";
         encoding = "cp1251";
         fontFrazeBOLD = FontFactory.getFont(fontUrlBold, encoding, true, 10.0F);
         font = FontFactory.getFont(fontUrl, encoding, true, 14.0F);
