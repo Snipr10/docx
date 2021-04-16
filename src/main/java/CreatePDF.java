@@ -76,7 +76,7 @@ public class CreatePDF {
             new Color(152, 251, 152),
     };
     private static Color NegativeColor =  new Color(255, 0, 0);
-    private static Color NeutralColor =  new Color(192, 192, 192);
+    private static Color NeutralColor =  new Color(82, 82, 82, 50);
     private static Color PositiveColor = new Color(144, 238, 144);
 
     public CreatePDF() throws IOException, DocumentException {
@@ -222,7 +222,7 @@ public class CreatePDF {
             c.setGenericTag(title);
             paragraphBaseStatistic = new Paragraph(c);
             document.add(paragraphBaseStatistic);
-            AddBar(categoriesPost, postCommentData, writer, diagramY);
+            AddBar(categoriesPost, postCommentData, writer, diagramY, true);
             diagramY = ChangeY(diagramY, document, false);
             ++diagramCount;
             document.add(paragraphEnter);
@@ -715,8 +715,10 @@ public class CreatePDF {
 
         return diagramY;
     }
-
-    private static void AddBar(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY) {
+    private static void AddBar(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY){
+        AddBar(categories, valuesA, writer, diagramY, false);
+    }
+    private static void AddBar(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY, boolean decimal) {
         DefaultCategoryDataset defaultCategoryDataset = new DefaultCategoryDataset();
 
         for(int i = 0; i < categories.length; ++i) {
@@ -762,8 +764,12 @@ public class CreatePDF {
 //        render.setMaximumBarWidth(0.05D);
         render.setMaximumBarWidth(0.09D);
         render.setBarPainter(new StandardBarPainter());
-
-        render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
+        if (decimal) {
+            render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
+        } else {
+            DecimalFormat labelFormat = new DecimalFormat("##");
+            plot.getRenderer().setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator("{2}", labelFormat));
+        }
         render.setSeriesItemLabelsVisible(1, true);
         render.setBaseItemLabelsVisible(true);
 //        render.setBaseSeriesVisible(true);
@@ -911,6 +917,21 @@ public class CreatePDF {
         renderer.setSeriesPaint(6, p3);
         renderer.setSeriesPaint(10, p3);
         renderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
+
+
+
+
+        renderer.setSeriesPositiveItemLabelPosition(0,
+                new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.HALF_ASCENT_CENTER, TextAnchor.HALF_ASCENT_CENTER, 0.0));
+
+
+//        renderer.setSeriesPositiveItemLabelPosition(0,
+//                new ItemLabelPosition(ItemLabelAnchor.OUTSIDE6, TextAnchor.BOTTOM_CENTER, TextAnchor.BOTTOM_CENTER, 0.0));
+
+        renderer.setSeriesPositiveItemLabelPosition(2,
+                new ItemLabelPosition(ItemLabelAnchor.OUTSIDE6, TextAnchor.CENTER, TextAnchor.CENTER, 0.0));
+
+
         SubCategoryAxis domainAxis = new SubCategoryAxis("");
         domainAxis.setCategoryMargin(0.05D);
         chart.getPlot().setBackgroundPaint(Color.WHITE);
