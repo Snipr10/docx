@@ -75,8 +75,8 @@ public class CreatePDF {
             SeaColor,
             new Color(152, 251, 152),
     };
-    private static Color NegativeColor =  new Color(255, 160, 122);
-    private static Color NeutralColor =  new Color(220, 220, 220);
+    private static Color NegativeColor =  new Color(255, 0, 0);
+    private static Color NeutralColor =  new Color(192, 192, 192);
     private static Color PositiveColor = new Color(144, 238, 144);
 
     public CreatePDF() throws IOException, DocumentException {
