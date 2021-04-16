@@ -1,14 +1,6 @@
 import com.itextpdf.awt.DefaultFontMapper;
 import com.itextpdf.awt.DefaultFontMapper.BaseFontParameters;
 import com.itextpdf.awt.FontMapper;
-import com.itextpdf.kernel.pdf.PdfOutline;
-import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.navigation.PdfDestination;
-import com.itextpdf.kernel.pdf.navigation.PdfExplicitDestination;
-import com.itextpdf.layout.element.Text;
-import com.itextpdf.layout.renderer.DrawContext;
-import com.itextpdf.layout.renderer.IRenderer;
-import com.itextpdf.layout.renderer.TextRenderer;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
@@ -16,24 +8,21 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.SubCategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.*;
 import org.jfree.chart.labels.ItemLabelAnchor;
 import org.jfree.chart.labels.ItemLabelPosition;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.GroupedStackedBarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.ui.GradientPaintTransformType;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.StandardGradientPaintTransformer;
 import org.jfree.ui.TextAnchor;
 import org.json.JSONArray;
@@ -59,6 +48,7 @@ import java.text.ParseException;
 import java.util.Iterator;
 import java.util.UUID;
 
+
 public class CreatePDF {
     private static String fontUrl = "arial.ttf";
     private static BaseFont fontRegular;
@@ -69,6 +59,26 @@ public class CreatePDF {
     private static Font fontFrazeBOLD;
     private static Font font;
     private static Font fontFraze;
+    private static Color GrayColor = new Color(224, 225, 225);
+    private static Color YellowColor = new Color(255, 209, 48);
+    private static Color BlueColor = new Color(0, 0, 139);
+    private static Color WhiteColor = new Color(240, 240, 240);
+    private static Color SeaColor = new Color(0, 206, 209);
+    private static Color[] cityColor = new Color[] {YellowColor,
+            BlueColor,
+            new Color(0, 206, 209),
+            new Color(255, 160, 122),
+            new Color(119, 136, 153),
+            new Color(147, 112, 219),
+            new Color(255, 192, 203),
+            new Color(255, 239, 213),
+            SeaColor,
+            new Color(152, 251, 152),
+    };
+    private static Color NegativeColor =  new Color(255, 0, 0);
+    private static Color NeutralColor =  new Color(192, 192, 192);
+    private static Color PositiveColor = new Color(144, 238, 144);
+
     public CreatePDF() throws IOException, DocumentException {
     }
 
@@ -230,7 +240,9 @@ public class CreatePDF {
             c.setGenericTag(title);
             paragraphBaseStatistic = new Paragraph(c);
             document.add(paragraphBaseStatistic);
-            addPie(new String[]{"Нейтральная", "Позитивная", "Негативная"}, variableDouble, writer, diagramY, false, true);
+
+            addPie(new String[]{"Негативная", "Нейтральная", "Позитивная"}, new Double[]{variableDouble[2],
+                    variableDouble[0], variableDouble[1]}, writer, diagramY, false, true);
             diagramY = ChangeY(diagramY, document, false);
             ++diagramCount;
         }
@@ -722,25 +734,42 @@ public class CreatePDF {
         jFreeChart.getPlot().setBackgroundPaint(Color.WHITE);
         CategoryPlot plot = jFreeChart.getCategoryPlot();
         plot.setOutlinePaint((Paint)null);
-        plot.setRangeGridlinePaint(Color.GRAY);
+        plot.setRangeGridlinePaint(WhiteColor);
+//        plot.setRangeGridlinePaint(Color.BLACK);
+        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+//        plot.setRangeGridlineStroke(new BasicStroke(0.1f));
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(WhiteColor);
+        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+
         CategoryAxis categoryAxis = plot.getDomainAxis();
+//        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
         categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-        categoryAxis.setAxisLinePaint(Color.WHITE);
+//        categoryAxis.setAxisLinePaint(Color.WHITE);
+        categoryAxis.setAxisLinePaint(Color.BLACK);
+
         categoryAxis.setTickLabelPaint(Color.BLACK);
         ValueAxis valueAxis = plot.getRangeAxis();
         valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
         valueAxis.setTickLabelPaint(Color.BLACK);
-        valueAxis.setAxisLinePaint(Color.WHITE);
+//        valueAxis.setAxisLinePaint(Color.WHITE);
+        valueAxis.setAxisLinePaint(Color.BLACK);
+
         BarRenderer render = (BarRenderer)plot.getRenderer();
-        render.setSeriesPaint(0, new Color(49151, false));
-        render.setMaximumBarWidth(0.05D);
+        render.setSeriesPaint(0, YellowColor);
+//        render.setMaximumBarWidth(0.05D);
+        render.setMaximumBarWidth(0.09D);
+        render.setBarPainter(new StandardBarPainter());
+
         render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelsVisible(1, true);
         render.setBaseItemLabelsVisible(true);
-        render.setBaseSeriesVisible(true);
+//        render.setBaseSeriesVisible(true);
         render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 5));
-        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
-        render.setBasePositiveItemLabelPosition(position);
+//        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
+//        render.setBasePositiveItemLabelPosition(position);
         jFreeChart.draw(graphics2d, rectangle2d);
         graphics2d.dispose();
         pdfContentByte.addTemplate(pdfTemplate, 40.0F, (float)diagramY);
@@ -756,10 +785,13 @@ public class CreatePDF {
 
     private static void addPie(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY, boolean is_city, boolean is_tonal) throws IOException, FontFormatException, DocumentException {
         DefaultPieDataset dataset = new DefaultPieDataset();
-
+        String [] categoriesUpdate =  new String[categories.length];
+        String updateCategory;
         for(int i = 0; i < categories.length; ++i) {
             if (is_city) {
-                dataset.setValue(categories[i] + " " + String.format("%.1f", valuesA[i]) + "%", valuesA[i]);
+                updateCategory = categories[i] + " " + String.format("%.1f", valuesA[i]) + "%";
+                categoriesUpdate[i]= updateCategory;
+                dataset.setValue(updateCategory, valuesA[i]);
             } else {
                 dataset.setValue(categories[i], valuesA[i]);
             }
@@ -769,30 +801,75 @@ public class CreatePDF {
         int width = 500;
         int height = 208;
         PdfTemplate pdfTemplate = pdfContentByte.createTemplate((float)width, (float)height);
-        JFreeChart chart = ChartFactory.createPieChart("", dataset, false, false, false);
-        PiePlot plot = (PiePlot)chart.getPlot();
+        JFreeChart chart = ChartFactory.createRingChart("", dataset, false, false, false);
+        chart.setBackgroundPaint(java.awt.Color.white);
+        chart.setPadding(new RectangleInsets(4, 8, 2, 2));
+
+        RingPlot plot = (RingPlot)chart.getPlot();
         if (!is_city) {
             StandardPieSectionLabelGenerator generator;
             if (is_tonal) {
-                generator = new StandardPieSectionLabelGenerator("{0} {2}", new DecimalFormat("0"), new DecimalFormat("0.00%"));
+                generator = new StandardPieSectionLabelGenerator("{0}; {2}", new DecimalFormat("0"), new DecimalFormat("0.00%"));
             } else {
-                generator = new StandardPieSectionLabelGenerator("{0} {2}", new DecimalFormat("0"), new DecimalFormat("0%"));
+                generator = new StandardPieSectionLabelGenerator("{0}; {2}", new DecimalFormat("0"), new DecimalFormat("0%"));
             }
 
             plot.setLabelGenerator(generator);
+        }
+        if (is_city) {
+            plot.setSectionDepth(1.0);
+            int s = 0;
+            for (String value : categoriesUpdate) {
+                if (value.contains("Не указан")) {
+                    plot.setSectionPaint(value, GrayColor);
+                } else {
+                    plot.setSectionPaint(value, cityColor[s]);
+                    s++;
+                }
+            }
+        } else {
+            plot.setSectionDepth(0.50);
+            plot.setSectionPaint("Негативная", NegativeColor);
+            plot.setSectionPaint("Нейтральная", NeutralColor);
+            plot.setSectionPaint("Не указан", GrayColor);
+            plot.setSectionPaint("Позитивная", PositiveColor);
+            plot.setSectionPaint("Женщины", YellowColor);
+            plot.setSectionPaint("Мужчины", BlueColor);
+            plot.setSectionPaint("18-25 лет", YellowColor);
+            plot.setSectionPaint("26-40 лет", BlueColor);
+            plot.setSectionPaint("40 лет и старше", SeaColor);
+            plot.setSectionPaint("не указан", GrayColor);
+
         }
 
         plot.setOutlinePaint((Paint)null);
         plot.setBackgroundPaint(Color.WHITE);
         plot.setLabelOutlinePaint(Color.WHITE);
-        plot.setSectionPaint("Негативная", Color.RED);
-        plot.setSectionPaint("Нейтральная", Color.GRAY);
-        plot.setSectionPaint("Позитивная", Color.GREEN);
+
+
         plot.setLabelFont(new java.awt.Font("Arial", 0, 5));
         plot.setLabelBackgroundPaint(Color.WHITE);
         plot.setNoDataMessage("No data available");
-        plot.setCircular(false);
-        plot.setLabelGap(0.02D);
+//        plot.setBackgroundPaint(null);
+//        plot.setOutlineVisible(false);
+//        plot.setLabelGenerator(null);
+//        plot.setSectionDepth(0.35);
+
+//        plot.setSectionOutlinesVisible(false);
+//        plot.setSimpleLabels(true);
+
+
+        plot.setLabelShadowPaint(null);
+        plot.setShadowXOffset(0.0D);
+        plot.setShadowYOffset(0.0D);
+        plot.setLabelLinkStyle(PieLabelLinkStyle.STANDARD);
+        plot.setLabelLinkPaint(new Color(50, 50, 50));
+        plot.setShadowPaint(null);
+        plot.setOuterSeparatorExtension(0);
+        plot.setInnerSeparatorExtension(0);
+        plot.setLabelBackgroundPaint(null);
+        plot.setLabelOutlinePaint(null);
+//        plot.setLabelGap(0.02D);
         Graphics2D graphics2d = pdfTemplate.createGraphics((float)width, (float)height, fontMapper);
         Rectangle2D rectangle2d = new java.awt.geom.Rectangle2D.Double(0.0D, 0.0D, (double)width, (double)height);
         chart.draw(graphics2d, rectangle2d);
@@ -820,15 +897,16 @@ public class CreatePDF {
         map.mapKeyToGroup("Позитивная тональность %", "G1");
         renderer.setSeriesToGroupMap(map);
         renderer.setItemMargin(0.0D);
-        Paint p1 = new GradientPaint(0.0F, 0.0F, new Color(255, 34, 34), 0.0F, 0.0F, new Color(255, 34, 34));
+        renderer.setBarPainter(new StandardBarPainter());
+        Color p1 = NegativeColor;
         renderer.setSeriesPaint(0, p1);
         renderer.setSeriesPaint(4, p1);
         renderer.setSeriesPaint(8, p1);
-        Paint p2 = new GradientPaint(0.0F, 0.0F, Color.gray, 0.0F, 0.0F, Color.gray);
+        Color p2 =  NeutralColor;
         renderer.setSeriesPaint(1, p2);
         renderer.setSeriesPaint(5, p2);
         renderer.setSeriesPaint(9, p2);
-        Paint p3 = new GradientPaint(0.0F, 0.0F, new Color(34, 255, 34), 0.0F, 0.0F, new Color(34, 255, 34));
+        Color p3 =PositiveColor;
         renderer.setSeriesPaint(2, p3);
         renderer.setSeriesPaint(6, p3);
         renderer.setSeriesPaint(10, p3);
@@ -840,24 +918,29 @@ public class CreatePDF {
         plot.setDomainAxis(domainAxis);
         plot.setRenderer(renderer);
         BarRenderer render = (BarRenderer)plot.getRenderer();
-        render.setMaximumBarWidth(0.05D);
+        render.setMaximumBarWidth(0.09D);
         render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelGenerator(1, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelGenerator(2, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelsVisible(1, true);
         render.setBaseItemLabelsVisible(true);
         render.setBaseSeriesVisible(true);
+
         render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 5));
         plot.setOutlinePaint((Paint)null);
-        plot.setRangeGridlinePaint(Color.GRAY);
+        plot.setRangeGridlinePaint(WhiteColor);
+        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+
         CategoryAxis categoryAxis = plot.getDomainAxis();
         categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-        categoryAxis.setAxisLinePaint(Color.WHITE);
+        categoryAxis.setAxisLinePaint(Color.BLACK);
         categoryAxis.setTickLabelPaint(Color.BLACK);
+        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
         ValueAxis valueAxis = plot.getRangeAxis();
         valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
         valueAxis.setTickLabelPaint(Color.BLACK);
-        valueAxis.setAxisLinePaint(Color.WHITE);
+        valueAxis.setAxisLinePaint(Color.BLACK);
         DecimalFormat pctFormat = new DecimalFormat("#%");
         pctFormat.setMultiplier(1);
         NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
@@ -891,10 +974,13 @@ public class CreatePDF {
         map.mapKeyToGroup("СоцМедиа", "G2");
         renderer.setSeriesToGroupMap(map);
         renderer.setItemMargin(0.0D);
-        Paint p1 = new GradientPaint(0.0F, 0.0F, new Color(129, 22, 244), 0.0F, 0.0F, new Color(129, 22, 244));
-        renderer.setSeriesPaint(0, p1);
-        Paint p2 = new GradientPaint(0.0F, 0.0F, new Color(100, 149, 237), 0.0F, 0.0F, new Color(100, 149, 237));
-        renderer.setSeriesPaint(1, p2);
+//        Paint p1 = new GradientPaint(0.0F, 0.0F, new Color(129, 22, 244), 0.0F, 0.0F, new Color(129, 22, 244));
+        renderer.setSeriesPaint(0, YellowColor);
+        renderer.setMaximumBarWidth(0.09D);
+        renderer.setBarPainter(new StandardBarPainter());
+
+//        renderer.setSeriesPaint(0, p1);
+        renderer.setSeriesPaint(1, BlueColor);
         renderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
         SubCategoryAxis domainAxis = new SubCategoryAxis("");
         domainAxis.setCategoryMargin(0.05D);
@@ -904,6 +990,10 @@ public class CreatePDF {
         plot.setRenderer(renderer);
         BarRenderer render = (BarRenderer)plot.getRenderer();
         render.setMaximumBarWidth(0.05D);
+
+//        render.setMaximumBarWidth(0.05D);
+
+
         render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelGenerator(1, new StandardCategoryItemLabelGenerator());
         render.setSeriesItemLabelGenerator(2, new StandardCategoryItemLabelGenerator());
@@ -911,18 +1001,29 @@ public class CreatePDF {
         render.setBaseItemLabelsVisible(true);
         render.setBaseSeriesVisible(true);
         render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 4));
-        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
-        render.setBasePositiveItemLabelPosition(position);
+//        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.INSIDE, TextAnchor.CENTER, TextAnchor.TOP_CENTER, 0);
+        render.setBasePositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER, TextAnchor.CENTER, 0.0));
+//        render.setBasePositiveItemLabelPosition(position);
         plot.setOutlinePaint((Paint)null);
-        plot.setRangeGridlinePaint(Color.GRAY);
+
+        plot.setRangeGridlinePaint(WhiteColor);
+//        plot.setRangeGridlinePaint(Color.BLACK);
+        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+//        plot.setRangeGridlineStroke(new BasicStroke(0.1f));
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(WhiteColor);
+        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+
         CategoryAxis categoryAxis = plot.getDomainAxis();
         categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-        categoryAxis.setAxisLinePaint(Color.WHITE);
+        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
+        categoryAxis.setAxisLinePaint(Color.BLACK);
         categoryAxis.setTickLabelPaint(Color.BLACK);
         ValueAxis valueAxis = plot.getRangeAxis();
         valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
         valueAxis.setTickLabelPaint(Color.BLACK);
-        valueAxis.setAxisLinePaint(Color.WHITE);
+        valueAxis.setAxisLinePaint(Color.BLACK);
         PdfContentByte pdfContentByte = writer.getDirectContent();
         int width = 500;
         int height = 208;
