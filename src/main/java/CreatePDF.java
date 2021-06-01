@@ -250,6 +250,8 @@ public class CreatePDF {
             val_test += d;
         }
         if (val_test > 0) {
+            document.newPage();
+            diagramY = 550;
             title = String.format("Диаграмма %s Тональность публикаци", diagramCount);
             c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
             c.setGenericTag(title);
@@ -264,14 +266,15 @@ public class CreatePDF {
             ChangeY(diagramY, document, false);
             ++diagramCount;
         }
-        document.newPage();
         int total_vk = WordWorker.getTotalMedia(jsonPosts, "vk");
         int total_tw = WordWorker.getTotalMedia(jsonPosts, "tw");
         int total_fb = WordWorker.getTotalMedia(jsonPosts, "fb");
         int total_gs = WordWorker.getTotalMedia(jsonPosts, "gs");
         int total_tg = WordWorker.getTotalMedia(jsonPosts, "tg");
         int total_ig = WordWorker.getTotalMedia(jsonPosts, "ig");
-        int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig;
+        int total_yt = WordWorker.getTotalMedia(jsonPosts, "yt");
+
+        int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig + total_yt;
         ParseData soData = WordWorker.getWeekDataMedia(type, jsonPosts, first_month, first_year);
         double val = 0;
         for (Double d:soData.valuesA){
@@ -284,11 +287,16 @@ public class CreatePDF {
         PdfPTable tableSource;
         JSONObject sexJson;
         if ((all != 0) || (val != 0)) {
-            title = String.format("Источники", diagramCount);
+
+            document.newPage();
+
+            title = "Источники";
             c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
             c.setGenericTag(title);
             paragraphSources = new Paragraph(c);
             document.add(paragraphSources);
+
+
             diagramY = 0;
             title = String.format("Таблица %s Ключевые площадки", tableCount);
             c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
@@ -306,10 +314,11 @@ public class CreatePDF {
             addToTable3(tableSource, "Twitter", String.valueOf(total_tw), String.valueOf((double) Math.round((double) ((float) total_tw) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
             addToTable3(tableSource, "Инстаграм", String.valueOf(total_ig), String.valueOf((double) Math.round((double) ((float) total_ig) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
             addToTable3(tableSource, "Telegram", String.valueOf(total_tg), String.valueOf((double) Math.round((double) ((float) total_tg) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
+            addToTable3(tableSource, "YouTube", String.valueOf(total_yt), String.valueOf((double) Math.round((double) ((float) total_yt) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
             addToTable3(tableSource, "СМИ", String.valueOf(total_gs), String.valueOf((double) Math.round((double) ((float) total_gs) * 100.0D / (double) ((float) all) * 100.0D) / 100.0D), fontFraze);
             addToTable3(tableSource, "Итог", String.valueOf(all), "100", font);
             document.add(tableSource);
-            diagramY = 300;
+            diagramY = 280;
 
             title = String.format("Диаграмма %s Динамика количества публикаций на отдельных площадках", diagramCount);
             c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
