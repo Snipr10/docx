@@ -267,10 +267,11 @@ class WordWorker {
             int total_vk = getTotalMedia(jsonPosts, "vk");
             int total_tw = getTotalMedia(jsonPosts, "tw");
             int total_fb = getTotalMedia(jsonPosts, "fb");
+            int total_yt = getTotalMedia(jsonPosts, "yt");
             int total_gs = getTotalMedia(jsonPosts, "gs");
             int total_tg = getTotalMedia(jsonPosts, "tg");
             int total_ig = getTotalMedia(jsonPosts, "ig");
-            int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig;
+            int all = total_vk + total_tw + total_fb + total_gs + total_tg + total_ig + total_yt;
 
 
             ParseData soData = getWeekDataMedia(type, jsonPosts, first_month, first_year);
@@ -339,6 +340,12 @@ class WordWorker {
                     tableRowSixIst.getCell(0).setText("Telegram");
                     tableRowSixIst.getCell(1).setText(String.valueOf(total_tg));
                     tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float) total_tg * 100 / (float) all * 100.00) / 100.0));
+
+                    XWPFTableRow tableRowSevenIst = tableIst.createRow();
+                    tableRowSevenIst.getCell(0).setText("YouTube");
+                    tableRowSevenIst.getCell(1).setText(String.valueOf(total_yt));
+                    tableRowSevenIst.getCell(2).setText(String.valueOf(Math.round((float) total_yt * 100 / (float) all * 100.00) / 100.0));
+
 
                     XWPFTableRow tableRowSevIst = tableIst.createRow();
                     tableRowSevIst.getCell(0).setText("СМИ");
