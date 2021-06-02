@@ -891,14 +891,45 @@ public class CreatePDF {
         graphics2d.dispose();
         pdfContentByte.addTemplate(pdfTemplate, 40.0F, (float)diagramY);
     }
+    private static Double roundValue(double d, boolean check, int n) {
+        if (check){
+            if (n  == 10) {
+                if (d > 10){
+                    return Math.round(d * 10.0) / 10.0;
+                }
+            }
+            if (n == 1) {
+                if (d > 1){
+                    return Math.round(d)/1.0;
+                }
+                else {
+                    return Math.round(d * 10.0) / 10.0;
+
+                }
+            }
+         }
+        return d;
+    }
 
     private static void addArea(DataForArea d, PdfWriter writer, int diagramY) throws IOException, FontFormatException, DocumentException {
         DefaultCategoryDataset result = new DefaultCategoryDataset();
+        int n = 1;
+        boolean check = false;
+        if (d.categoriesPostType.length > 49) {
+            check = true;
+            n = 1;
 
+        }
+        else {
+            if (d.categoriesPostType.length > 29) {
+                check = true;
+                n = 10;
+            }
+        }
         for(int i = 0; i < d.categoriesPostType.length; ++i) {
-            result.addValue(d.valuesNegative[i], "Негативная тональность %", d.categoriesPostType[i]);
-            result.addValue(d.valuesNetural[i], "Нейтральная тональность %", d.categoriesPostType[i]);
-            result.addValue(d.valuesPositive[i], "Позитивная тональность %", d.categoriesPostType[i]);
+            result.addValue(roundValue(d.valuesNegative[i], check, n), "Негативная тональность %", d.categoriesPostType[i]);
+            result.addValue(roundValue(d.valuesNetural[i], check, n), "Нейтральная тональность %", d.categoriesPostType[i]);
+            result.addValue(roundValue(d.valuesPositive[i], check, n), "Позитивная тональность %", d.categoriesPostType[i]);
         }
 
         JFreeChart chart = ChartFactory.createStackedBarChart("", "%", "", result, PlotOrientation.VERTICAL, true, false, false);
@@ -933,9 +964,8 @@ public class CreatePDF {
         renderer.setSeriesPositiveItemLabelPosition(0,
                 new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.HALF_ASCENT_CENTER, TextAnchor.HALF_ASCENT_CENTER, 0.0));
 
-
-//        renderer.setSeriesPositiveItemLabelPosition(0,
-//                new ItemLabelPosition(ItemLabelAnchor.OUTSIDE6, TextAnchor.BOTTOM_CENTER, TextAnchor.BOTTOM_CENTER, 0.0));
+        renderer.setSeriesPositiveItemLabelPosition(1,
+                new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.TOP_CENTER, TextAnchor.TOP_CENTER, 0.0));
 
         renderer.setSeriesPositiveItemLabelPosition(2,
                 new ItemLabelPosition(ItemLabelAnchor.OUTSIDE6, TextAnchor.CENTER, TextAnchor.CENTER, 0.0));
