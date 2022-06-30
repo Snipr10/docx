@@ -141,7 +141,12 @@ public class LogIn implements HttpHandler {
         }
         DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment, total_views);
         JSONArray postsContent = getPostsContent();
-        JSONArray commentContent = getCommentContent();
+        JSONArray commentContent;
+        try {
+            commentContent = getCommentContent();
+        }  catch (Exception e) {
+            commentContent = new JSONArray();
+        }
         JSONArray posts = getPosts();
         JSONObject stat = getStats();
         JSONObject sex = getStats("sex");
@@ -211,7 +216,7 @@ public class LogIn implements HttpHandler {
         }
         outputStream.close();
         inputStream.close();
-        file.delete();
+//        file.delete();
         exchange.getResponseSender().send("OK");
     }
 

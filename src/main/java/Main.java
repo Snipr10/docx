@@ -11,7 +11,7 @@ public class Main {
 
         final
         Undertow server = Undertow.builder()
-                .addHttpListener(4274, "0.0.0.0")
+                .addHttpListener(4273, "0.0.0.0")
 
 //                .setHandler(
 //                        Handlers.path()
