@@ -15,13 +15,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
-
 public class LogIn implements HttpHandler {
     CookieManager cookieManager;
     String dateFrom;
     String dateTo;
     String thread_id;
     String type;
+    String DOMAIN = "https://isiao.glassen-it.com";
 
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (exchange.isInIoThread()) {
@@ -71,7 +71,7 @@ public class LogIn implements HttpHandler {
         CookieHandler.setDefault(cookieManager);
         String jsonInputString = String.format("{\"login\": \"%s\", \"password\": \"%s\"}",
                 jsonObject.get("login"), jsonObject.get("password"));
-        URL url = new URL("https://api.glassen-it.com/component/socparser/authorization/login");
+        URL url = new URL(DOMAIN + "/component/socparser/authorization/login");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -96,7 +96,7 @@ public class LogIn implements HttpHandler {
             System.out.println(cookie.getDomain());
             System.out.println(cookie);
         }
-        url = new URL("https://api.glassen-it.com/component/socparser/authorization/login");
+        url = new URL(DOMAIN + "/component/socparser/authorization/login");
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -230,7 +230,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getCommentInfo() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/commentTrustDaily");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/commentTrustDaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -257,7 +257,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getPostsInfo() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/trustdaily");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/trustdaily");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -286,7 +286,7 @@ public class LogIn implements HttpHandler {
     }
 
     private Integer getPostsSources() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/content/membersCount");
+        URL url = new URL(DOMAIN + "/component/socparser/content/membersCount");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -313,7 +313,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getUsers() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/userlinks ");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/userlinks ");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -342,7 +342,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getStats() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats");
+        URL url = new URL(DOMAIN + "/component/socparser/stats");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -371,7 +371,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONArray getCity() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/thread/getcitytop");
+        URL url = new URL(DOMAIN + "/component/socparser/thread/getcitytop");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -399,7 +399,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getStats(String type) throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats");
+        URL url = new URL(DOMAIN + "/component/socparser/stats");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -430,7 +430,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getAge() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/ages");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/ages");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -462,7 +462,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONArray getPosts() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/stats/owners_top");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/owners_top");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -492,7 +492,7 @@ public class LogIn implements HttpHandler {
 
 
     private JSONArray getPostsContent() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/content/posts");
+        URL url = new URL(DOMAIN + "/component/socparser/content/posts");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -523,7 +523,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONArray getCommentContent() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/content/allcommentaries");
+        URL url = new URL(DOMAIN + "/component/socparser/content/allcommentaries");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -554,7 +554,7 @@ public class LogIn implements HttpHandler {
     }
 
     private String getNameThread() throws IOException {
-        URL url = new URL("https://api.glassen-it.com/component/socparser/thread/additional_info");
+        URL url = new URL(DOMAIN + "/component/socparser/thread/additional_info");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
