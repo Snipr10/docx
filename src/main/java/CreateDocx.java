@@ -4,6 +4,7 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.Units;
 import org.apache.poi.xddf.usermodel.*;
 import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xddf.usermodel.text.XDDFTextBody;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
@@ -23,9 +24,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+
 class WordWorker {
     private static  int entityOnPage = 0;
     private static int commentsLenght= 100;
+    private static String format = "Times New Roman";
     static CellReference setTitleInDataSheet(XWPFChart chart, String title, int column) throws Exception {
         XSSFWorkbook workbook = chart.getWorkbook();
         XSSFSheet sheet = workbook.getSheetAt(0);
@@ -61,9 +65,9 @@ class WordWorker {
             XWPFRun paragraphConfig = bodyParagraph.createRun();
             paragraphConfig.setFontSize(22);
             paragraphConfig.setBold(true);
-            paragraphConfig.setFontFamily("Arial");
+            paragraphConfig.setFontFamily(format);
             paragraphConfig.setText(
-                    "Базовый отчет"
+                    " "
             );
             paragraphConfig.addBreak();
             paragraphConfig.addBreak();
@@ -80,7 +84,7 @@ class WordWorker {
             XWPFRun paragraphConfigLenta = bodyParagraphLenta.createRun();
             paragraphConfigLenta.setFontSize(22);
             paragraphConfigLenta.setBold(true);
-            paragraphConfigLenta.setFontFamily("Arial");
+            paragraphConfigLenta.setFontFamily(format);
             paragraphConfigLenta.setText(
                     "Лента: "
             );
@@ -90,7 +94,7 @@ class WordWorker {
             XWPFRun paragraphConfigName = bodyParagraphName.createRun();
             paragraphConfigName.setFontSize(26);
             paragraphConfigName.setBold(true);
-            paragraphConfigName.setFontFamily("Arial");
+            paragraphConfigName.setFontFamily(format);
             paragraphConfigName.setText(
                     name
 
@@ -101,7 +105,7 @@ class WordWorker {
             bodyParagraphAnalyze.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigAnalyze = bodyParagraphAnalyze.createRun();
             paragraphConfigAnalyze.setFontSize(14);
-            paragraphConfigAnalyze.setFontFamily("Arial");
+            paragraphConfigAnalyze.setFontFamily(format);
             paragraphConfigAnalyze.setText("Аналитический отчет по упоминаниям в онлайн-СМИ и соцмедиа");
             paragraphConfigAnalyze.addBreak();
 
@@ -110,7 +114,7 @@ class WordWorker {
             bodyParagraphDate.setAlignment(ParagraphAlignment.LEFT);
             XWPFRun paragraphConfigDate = bodyParagraphDate.createRun();
             paragraphConfigDate.setFontSize(14);
-            paragraphConfigDate.setFontFamily("Arial");
+            paragraphConfigDate.setFontFamily(format);
             paragraphConfigDate.setText(
                     "Период анализа: " + date
             );
@@ -136,7 +140,7 @@ class WordWorker {
 
             run.setFontSize(14);
             run.setBold(true);
-            run.setFontFamily("Arial");
+            run.setFontFamily(format);
 
             CTP ctP = paragraph.getCTP();
             CTSimpleField toc = ctP.addNewFldSimple();
@@ -152,7 +156,7 @@ class WordWorker {
             XWPFRun paragraphConfigStatic = bodyParagraphStatistic.createRun();
             paragraphConfigStatic.setFontSize(14);
             paragraphConfigStatic.setBold(true);
-            paragraphConfigStatic.setFontFamily("Arial");
+            paragraphConfigStatic.setFontFamily(format);
             paragraphConfigStatic.setText(
                     "Базовые статистики и количество реакций пользователей на публикации"
             );
@@ -163,17 +167,45 @@ class WordWorker {
             XWPFTableRow tableRowOne = table.getRow(0);
             run = tableRowOne.getCell(0).getParagraphs().get(0).createRun();
             run.setText("Совокупная аудитория, чел.");
-            tableRowOne.addNewTableCell().setText(String.valueOf(users));
+            run.setFontSize(12);
+            run.setFontFamily(format);
+            XWPFTableCell cell_one = tableRowOne.addNewTableCell();
+            cell_one.removeParagraph(0);
+            XWPFParagraph addParagraph_one = cell_one.addParagraph();
+            XWPFRun run_one = addParagraph_one.createRun();
+            run_one.setFontFamily(format);
+            run_one.setFontSize(12);
+            run_one.setText(String.valueOf(users));
 
             XWPFTableRow tableRowTwo = table.createRow();
             XWPFRun run1 = tableRowTwo.getCell(0).getParagraphs().get(0).createRun();
             run1.setText("Количество источников публикаций, шт.");
-            tableRowTwo.getCell(1).setText(String.valueOf(data.total_sources));
+            run1.setFontSize(12);
+            run1.setFontFamily(format);
+
+            XWPFTableCell cell_two = tableRowTwo.getCell(1);
+            cell_two.removeParagraph(0);
+            XWPFParagraph addParagraph_two = cell_two.addParagraph();
+            XWPFRun run_two = addParagraph_two.createRun();
+            run_two.setFontFamily(format);
+            run_two.setFontSize(12);
+            run_two.setText(String.valueOf(data.total_sources));
+
 
             XWPFTableRow tableRowThree = table.createRow();
             XWPFRun run2 = tableRowThree.getCell(0).getParagraphs().get(0).createRun();
             run2.setText("Количество публикаций, шт.");
-            tableRowThree.getCell(1).setText(String.valueOf(data.total_publication));
+            run2.setFontSize(12);
+            run2.setFontFamily(format);
+
+
+            XWPFTableCell cell__2 = tableRowThree.getCell(1);
+            cell__2.removeParagraph(0);
+            XWPFParagraph addParagraph___2 = cell__2.addParagraph();
+            XWPFRun run___2 = addParagraph___2.createRun();
+            run___2.setFontFamily(format);
+            run___2.setFontSize(12);
+            run___2.setText(String.valueOf(data.total_publication));
 
 //            XWPFTableRow tableRowFour = table.createRow();
 //            XWPFRun run3 = tableRowFour.getCell(0).getParagraphs().get(0).createRun();
@@ -182,8 +214,19 @@ class WordWorker {
 
             XWPFTableRow tableRow4 = table.createRow();
             XWPFRun run4_1 = tableRow4.getCell(0).getParagraphs().get(0).createRun();
+            run4_1.setFontSize(12);
+            run4_1.setFontFamily(format);
+
             run4_1.setText("Количество реакций пользователей на публикации, шт.");
-            tableRow4.getCell(1).setText(String.valueOf(data.total_views));
+
+            XWPFTableCell cell__4 = tableRow4.getCell(1);
+            cell__4.removeParagraph(0);
+            XWPFParagraph addParagraph___4 = cell__4.addParagraph();
+            XWPFRun run___4 = addParagraph___4.createRun();
+            run___4.setFontFamily(format);
+            run___4.setFontSize(12);
+            run___4.setText(String.valueOf(data.total_views));
+
 
             for (int x = 0; x < table.getNumberOfRows(); x++) {
                 XWPFTableRow row = table.getRow(x);
@@ -291,7 +334,7 @@ class WordWorker {
                 XWPFRun paragraphConfigIst = bodyParagraphIst.createRun();
                 paragraphConfigIst.setFontSize(22);
                 paragraphConfigIst.setBold(true);
-                paragraphConfigIst.setFontFamily("Arial");
+                paragraphConfigIst.setFontFamily(format);
                 paragraphConfigIst.setText(
                         "Источники"
                 );
@@ -307,55 +350,62 @@ class WordWorker {
                     XWPFRun run4 = tableRowOneIst.getCell(0).getParagraphs().get(0).createRun();
                     run4.setText("Площадка");
                     run4.setBold(true);
+                    run4.setFontSize(12);
+                    run4.setFontFamily(format);
+
                     tableRowOneIst.addNewTableCell();
                     XWPFRun run5 = tableRowOneIst.getCell(1).getParagraphs().get(0).createRun();
                     run5.setText("Количество публикаций, шт.");
                     run5.setBold(true);
+                    run5.setFontSize(12);
+                    run5.setFontFamily(format);
+
                     tableRowOneIst.addNewTableCell();
                     XWPFRun run6 = tableRowOneIst.getCell(2).getParagraphs().get(0).createRun();
                     run6.setText("   %     ");
                     run6.setBold(true);
+                    run6.setFontSize(12);
+                    run6.setFontFamily(format);
 
                     XWPFTableRow tableRowTwoIst = tableIst.createRow();
-                    tableRowTwoIst.getCell(0).setText("Вконтакте");
-                    tableRowTwoIst.getCell(1).setText(String.valueOf(total_vk));
-                    tableRowTwoIst.getCell(2).setText(String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0));
+                    setText(tableRowTwoIst, "Вконтакте", 0);
+                    setText(tableRowTwoIst, String.valueOf(total_vk), 1);
+                    setText(tableRowTwoIst, String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThreeIst = tableIst.createRow();
-                    tableRowThreeIst.getCell(0).setText("Facebook");
-                    tableRowThreeIst.getCell(1).setText(String.valueOf(total_fb));
-                    tableRowThreeIst.getCell(2).setText(String.valueOf(Math.round((float) total_fb * 100 / (float) all * 100.00) / 100.0));
+                    setText(tableRowThreeIst, "Facebook", 0);
+                    setText(tableRowThreeIst, String.valueOf(total_fb), 1);
+                    setText(tableRowThreeIst, String.valueOf(Math.round((float) total_fb * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThIst = tableIst.createRow();
-                    tableRowThIst.getCell(0).setText("Twitter");
-                    tableRowThIst.getCell(1).setText(String.valueOf(total_tw));
-                    tableRowThIst.getCell(2).setText(String.valueOf(Math.round((float) total_tw * 100 / (float) all * 100.00) / 100.0));
+                    setText(tableRowThIst, "Twitter", 0);
+                    setText(tableRowThIst, String.valueOf(total_tw), 1);
+                    setText(tableRowThIst, String.valueOf(Math.round((float) total_tw * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowFIst = tableIst.createRow();
-                    tableRowFIst.getCell(0).setText("Инстаграм");
-                    tableRowFIst.getCell(1).setText(String.valueOf(total_ig));
-                    tableRowFIst.getCell(2).setText(String.valueOf(Math.round((float) total_ig * 100 / (float) all * 100.00) / 100.0));
+                    setText(tableRowFIst, "Инстаграм", 0);
+                    setText(tableRowFIst, String.valueOf(total_ig), 1);
+                    setText(tableRowFIst, String.valueOf(Math.round((float) total_ig * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSixIst = tableIst.createRow();
-                    tableRowSixIst.getCell(0).setText("Telegram");
-                    tableRowSixIst.getCell(1).setText(String.valueOf(total_tg));
-                    tableRowSixIst.getCell(2).setText(String.valueOf(Math.round((float) total_tg * 100 / (float) all * 100.00) / 100.0));
+                    setText(tableRowSixIst, "Telegram", 0);
+                    setText(tableRowSixIst, String.valueOf(total_tg), 1);
+                    setText(tableRowSixIst, String.valueOf(Math.round((float) total_tg * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevenIst = tableIst.createRow();
-                    tableRowSevenIst.getCell(0).setText("YouTube");
-                    tableRowSevenIst.getCell(1).setText(String.valueOf(total_yt));
-                    tableRowSevenIst.getCell(2).setText(String.valueOf(Math.round((float) total_yt * 100 / (float) all * 100.00) / 100.0));
-
+                    setText(tableRowSevenIst, "YouTube", 0);
+                    setText(tableRowSevenIst, String.valueOf(total_yt), 1);
+                    setText(tableRowSevenIst, String.valueOf(Math.round((float) total_yt * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevIst = tableIst.createRow();
-                    tableRowSevIst.getCell(0).setText("СМИ");
-                    tableRowSevIst.getCell(1).setText(String.valueOf(total_gs));
-                    tableRowSevIst.getCell(2).setText(String.valueOf(Math.round((float) total_gs * 100 / (float) all * 100.00) / 100.0));
+                    setText(tableRowSevIst, "СМИ", 0);
+                    setText(tableRowSevIst, String.valueOf(total_gs), 1);
+                    setText(tableRowSevIst, String.valueOf(Math.round((float) total_gs * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevAll = tableIst.createRow();
-                    tableRowSevAll.getCell(0).setText("Итог");
-                    tableRowSevAll.getCell(1).setText(String.valueOf(all));
-                    tableRowSevAll.getCell(2).setText("100");
+                    setText(tableRowSevAll, "Итог", 0);
+                    setText(tableRowSevAll, String.valueOf(all), 1);
+                    setText(tableRowSevAll, "100", 2);
 
 
                     for (int x = 0; x < tableIst.getNumberOfRows(); x++) {
@@ -621,7 +671,7 @@ class WordWorker {
                 XWPFRun paragraphConfigKeysP = bodyParagrapKeysP.createRun();
                 paragraphConfigKeysP.setFontSize(22);
                 paragraphConfigKeysP.setBold(true);
-                paragraphConfigKeysP.setFontFamily("Arial");
+                paragraphConfigKeysP.setFontFamily(format);
 //                paragraphConfigKeysP.setText(
 //                        "Ключевые публикации и комментарии"
 //                );
@@ -629,7 +679,7 @@ class WordWorker {
                 if (likesPosts == 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph(docxModel, String.format("Таблица %s Топ-%s публикаций за сутки", tableCount, likesPosts));
+                    addParagraph_new(docxModel, String.format("Таблица %s Топ-%s публикаций за сутки", tableCount, likesPosts), tableCount==1);
                     tableCount += 1;
                     XWPFTable tableTop10Post = docxModel.createTable();
                     XWPFTableRow tableTop10PostRow = tableTop10Post.getRow(0);
@@ -638,7 +688,8 @@ class WordWorker {
                     XWPFRun run15 = tableTop10PostRow.getCell(0).getParagraphs().get(0).createRun();
                     run15.setText("Публикация");
                     run15.setBold(true);
-
+                    run15.setFontSize(12);
+                    run15.setFontFamily(format);
 //                    tableTop10PostRow.addNewTableCell();
 //                    XWPFRun run16 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
 //                    run16.setText("URL");
@@ -649,7 +700,8 @@ class WordWorker {
                     XWPFRun run17 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
                     run17.setText("Резонанс");
                     run17.setBold(true);
-
+                    run17.setFontSize(12);
+                    run17.setFontFamily(format);
 
                     String text;
 
@@ -659,9 +711,9 @@ class WordWorker {
 //                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(), res(jsonObject)
 //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
-                        tableRowTwoIst.getCell(0).setText(text);
-//                        tableRowTwoIst.getCell(1).setText(str2);
-                        tableRowTwoIst.getCell(1).setText(res(jsonObject));
+                        setText(tableRowTwoIst, text, 0);
+                        setText(tableRowTwoIst, res(jsonObject), 1);
+
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Post.getRow(x);
@@ -679,7 +731,7 @@ class WordWorker {
                 if (likesComment== 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph(docxModel, String.format("Таблица %s Перечень основных информационных поводов публикаций", tableCount, likesComment));
+                    addParagraph_new(docxModel, String.format("Таблица %s Перечень основных информационных поводов публикаций", tableCount, likesComment), true);
                     tableCount += 1;
                     String text;
                     XWPFTable tableTop10Comment = docxModel.createTable();
@@ -687,17 +739,25 @@ class WordWorker {
                     XWPFRun run19 = tableTop10CommentRow.getCell(0).getParagraphs().get(0).createRun();
                     run19.setText("Комментарий");
                     run19.setBold(true);
+                    run19.setFontSize(12);
+                    run19.setFontFamily(format);
+
 
                     tableTop10CommentRow.addNewTableCell();
                     XWPFRun run20 = tableTop10CommentRow.getCell(1).getParagraphs().get(0).createRun();
                     run20.setText("URL");
                     run20.setBold(true);
+                    run20.setFontSize(12);
+                    run20.setFontFamily(format);
+
                     tableTop10CommentRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
 
                     tableTop10CommentRow.addNewTableCell();
                     XWPFRun run21 = tableTop10CommentRow.getCell(2).getParagraphs().get(0).createRun();
                     run21.setText("Резонанс");
                     run21.setBold(true);
+                    run21.setFontSize(12);
+                    run21.setFontFamily(format);
 
                     for (Object o : commentContent) {
                         jsonObject = (JSONObject) o;
@@ -721,7 +781,7 @@ class WordWorker {
                 if (likesPosts == 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph(docxModel, String.format("Ссылки на публикации", tableCount, likesPosts));
+                    addParagraph_new(docxModel, String.format("Таблица %s Ссылки на публикации", tableCount, likesPosts), true);
                     tableCount += 1;
                     XWPFTable tableTop10Post = docxModel.createTable();
                     XWPFTableRow tableTop10PostRow = tableTop10Post.getRow(0);
@@ -730,11 +790,16 @@ class WordWorker {
                     XWPFRun run15 = tableTop10PostRow.getCell(0).getParagraphs().get(0).createRun();
                     run15.setText("Публикация");
                     run15.setBold(true);
+                    run15.setFontSize(12);
+                    run15.setFontFamily(format);
 
                     tableTop10PostRow.addNewTableCell();
                     XWPFRun run16 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
                     run16.setText("URL");
                     run16.setBold(true);
+                    run16.setFontSize(12);
+                    run16.setFontFamily(format);
+
                     tableTop10PostRow.getCell(1).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
 
     //                tableTop10PostRow.addNewTableCell();
@@ -751,9 +816,9 @@ class WordWorker {
     //                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(), res(jsonObject)
     //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
-                        tableRowTwoIst.getCell(0).setText(text);
-    //                        tableRowTwoIst.getCell(1).setText(str2);
-                        tableRowTwoIst.getCell(1).setText(jsonObject.get("uri").toString());
+                        setText(tableRowTwoIst, text, 0);
+                        setText(tableRowTwoIst, jsonObject.get("uri").toString(), 1);
+
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Post.getRow(x);
@@ -808,9 +873,10 @@ class WordWorker {
 
     private static void getRow(XWPFTable table, String str1, String str2, String str3){
         XWPFTableRow tableRowTwoIst = table.createRow();
-        tableRowTwoIst.getCell(0).setText(str1);
-        tableRowTwoIst.getCell(1).setText(str2);
-        tableRowTwoIst.getCell(2).setText(str3);
+        setText(tableRowTwoIst, str1, 0);
+        setText(tableRowTwoIst, str2, 1);
+        setText(tableRowTwoIst, str3, 2);
+
     }
 
     public static int getComment(JSONObject jsonComments, String key) {
@@ -928,7 +994,12 @@ class WordWorker {
     }
 
     private static int addDоubleChats(XWPFDocument docxModel, String[] categories, Double[] valuesA, Double[] valuesB, String name, int dia) throws Exception {
-
+        int i_i =0;
+        for (String s : categories) {
+            String [] splyt_d = s.split("-");
+            categories[i_i] = splyt_d[2] + "-" + splyt_d[1] +  "-" + splyt_d[0];
+            i_i += 1;
+        }
         double val = 0;
         for (Double d:valuesA){
             val += d;
@@ -964,7 +1035,7 @@ class WordWorker {
         leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
         leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
         leftAxis.getOrAddShapeProperties().setLineProperties(lineWhite);
-        XDDFSolidFillProperties WHITE_SMOKE = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.GRAY));
+        XDDFSolidFillProperties WHITE_SMOKE = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.LIGHT_GRAY));
         XDDFLineProperties line = new XDDFLineProperties();
         line.setFillProperties(WHITE_SMOKE);
         leftAxis.getOrAddMajorGridProperties().setLineProperties(line);
@@ -980,7 +1051,6 @@ class WordWorker {
 
         series.setTitle("Сми", null);
         series2.setTitle("Соцмедиа", null);
-
 
         XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.BLUE_VIOLET));
 
@@ -1007,7 +1077,7 @@ class WordWorker {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowLegendKey().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowCatName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowSerName().setVal(false);
-            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.CTR);
+            chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.OUT_END);
 
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewTxPr()
                     .addNewBodyPr().setRot((int)(-90.00 * 60000));
@@ -1020,7 +1090,10 @@ class WordWorker {
         XDDFChartLegend legend = chart.getOrAddLegend();
         legend.setPosition(LegendPosition.TOP);
 //        legend.setOverlay(true);
-
+        XDDFTextBody legendTextBody = new XDDFTextBody(legend);
+        legendTextBody.getXmlObject().addNewBodyPr();
+        legendTextBody.addNewParagraph().addDefaultRunProperties().setFontSize(8d);
+        legend.setTextBody(legendTextBody);
         return dia;
     }
 
@@ -1521,18 +1594,24 @@ class WordWorker {
             return "0";
         }
  }
-
  private static XWPFDocument addParagraph(XWPFDocument docxModel, String name) {
+     return addParagraph_new(docxModel, name, false);
+ }
+ private static XWPFDocument addParagraph_new(XWPFDocument docxModel, String name, Boolean new_page) {
 
      XWPFParagraph paragraph = docxModel.createParagraph();
      paragraph.setStyle("Heading2");
-     if (entityOnPage != 0 && entityOnPage % 3 ==0) {
-        paragraph.setPageBreak(true);
+     if (new_page) {
+         paragraph.setPageBreak(true);
      }
+     else{
+     if ((entityOnPage != 0 && entityOnPage % 3 ==0)) {
+        paragraph.setPageBreak(true);
+     }}
      paragraph.setAlignment(ParagraphAlignment.LEFT);
      XWPFRun paragraphConfig= paragraph.createRun();
      paragraphConfig.setFontSize(12);
-     paragraphConfig.setFontFamily("Arial");
+     paragraphConfig.setFontFamily(format);
      paragraphConfig.setBold(true);
      paragraphConfig.addBreak();
      paragraphConfig.setText(
@@ -1567,5 +1646,15 @@ class WordWorker {
                 stop = true;
         }
         return sb;
+    }
+
+    private static void setText(XWPFTableRow tableRow, String data, int celNum){
+        XWPFTableCell cell_two = tableRow.getCell(celNum);
+        cell_two.removeParagraph(0);
+        XWPFParagraph addParagraph_two = cell_two.addParagraph();
+        XWPFRun run_two = addParagraph_two.createRun();
+        run_two.setFontFamily(format);
+        run_two.setFontSize(12);
+        run_two.setText(data);
     }
 }
