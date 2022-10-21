@@ -215,7 +215,7 @@ public class LogInSecond implements HttpHandler {
         }
         outputStream.close();
         inputStream.close();
-//        file.delete();
+        file.delete();
         exchange.getResponseSender().send("OK");
     }
 
