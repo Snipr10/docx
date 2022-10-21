@@ -22,23 +22,29 @@ public class Main {
                 .setHandler(new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        if (exchange.getRequestMethod().toString().equals("POST")) {
+                        if (exchange.getRequestMethod().toString().equals("POST") && exchange.getRequestURI().toString().equals("/data")) {
                             LogIn s = new LogIn();
                             s.handleRequest(exchange);
                         }
                         else {
-                            exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
-                                    "*");
-                            exchange.getResponseHeaders()
-                                    .put(new HttpString("Access-Control-Allow-Headers"),
-                                            "origin, x-requested-with, accept, accept-language, content-language, content-type, Access-Control-Request-Headers, Access-Control-Request-Method");
-                            exchange.getResponseHeaders().put(new HttpString("Access-Control-Max-Age"),
-                                    "1728000");
-                            exchange.getResponseHeaders().put(new HttpString("Content-Length"),
-                                    "0");
-                            exchange.getResponseHeaders().put(new HttpString("Content-Type"),
-                                    "text/plain");
 
+                            if (exchange.getRequestMethod().toString().equals("POST") && exchange.getRequestURI().toString().equals("/analytic")) {
+                                LogInSecond s = new LogInSecond();
+                                s.handleRequest(exchange);
+                            }
+                               else{
+                                    exchange.getResponseHeaders().put(new HttpString("Access-Control-Allow-Methods"),
+                                            "*");
+                                    exchange.getResponseHeaders()
+                                            .put(new HttpString("Access-Control-Allow-Headers"),
+                                                    "origin, x-requested-with, accept, accept-language, content-language, content-type, Access-Control-Request-Headers, Access-Control-Request-Method");
+                                    exchange.getResponseHeaders().put(new HttpString("Access-Control-Max-Age"),
+                                            "1728000");
+                                    exchange.getResponseHeaders().put(new HttpString("Content-Length"),
+                                            "0");
+                                    exchange.getResponseHeaders().put(new HttpString("Content-Type"),
+                                            "text/plain");
+                                }
                         }
                     }
                 })

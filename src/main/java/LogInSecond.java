@@ -2,7 +2,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.apache.poi.xwpf.usermodel.*;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,8 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
-
-public class LogIn implements HttpHandler {
+public class LogInSecond implements HttpHandler {
     CookieManager cookieManager;
     String dateFrom;
     String dateTo;
@@ -172,7 +171,7 @@ public class LogIn implements HttpHandler {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                     "application/pdf");
         } else {
-            XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
+            XWPFDocument docx = NewReport.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
                     first_month, first_year
             );
