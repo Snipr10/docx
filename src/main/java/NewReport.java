@@ -679,7 +679,7 @@ class NewReport {
                 if (likesPosts == 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph_new(docxModel, String.format("Таблица %s Топ-%s публикаций за сутки", tableCount, likesPosts), tableCount==1);
+                    addParagraph_new(docxModel, String.format("Таблица %s Топ-%s публикаций за сутки", tableCount, postsContent.length()), tableCount==1);
                     tableCount += 1;
                     XWPFTable tableTop10Post = docxModel.createTable();
                     XWPFTableRow tableTop10PostRow = tableTop10Post.getRow(0);
