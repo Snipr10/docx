@@ -698,7 +698,7 @@ class NewReport {
 
                     tableTop10PostRow.addNewTableCell();
                     XWPFRun run17 = tableTop10PostRow.getCell(1).getParagraphs().get(0).createRun();
-                    run17.setText("Резонанс");
+                    run17.setText("Охват");
                     run17.setBold(true);
                     run17.setFontSize(12);
                     run17.setFontFamily(format);
