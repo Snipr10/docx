@@ -654,14 +654,15 @@ class NewReport {
             for (Object o : postsContent) {
                 jsonObject = (JSONObject) o;
                 if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
-                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) > 0) {
+                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) +
+                        Integer.parseInt(jsonObject.get("attendance").toString()) > 0) {
                     likesPosts+=1;
                 }
             }
             for (Object o : commentContent) {
-                if (Integer.parseInt(((JSONObject) o).get("likes").toString()) > 0) {
+//                if (Integer.parseInt(((JSONObject) o).get("likes").toString())  > 0) {
                     likesComment+=1;
-                }
+//                }
             }
             if((likesComment !=0) || (likesPosts !=0 )) {
                 XWPFParagraph bodyParagrapKeysP = docxModel.createParagraph();
@@ -712,7 +713,7 @@ class NewReport {
 //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
                         setText(tableRowTwoIst, text, 0);
-                        setText(tableRowTwoIst, res(jsonObject), 1);
+                        setText(tableRowTwoIst, jsonObject.get("attendance").toString(), 1);
 
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {

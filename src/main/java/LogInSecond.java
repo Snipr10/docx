@@ -139,7 +139,7 @@ public class LogInSecond implements HttpHandler {
             total_views += Integer.parseInt(((JSONArray) o).get(1).toString());
         }
         DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment, total_views);
-        JSONArray postsContent = getPostsContent();
+
         JSONArray commentContent;
         try {
             commentContent = getCommentContent();
@@ -162,7 +162,13 @@ public class LogInSecond implements HttpHandler {
         } catch (NullPointerException e) {
             format = "word";
         }
-
+        JSONArray postsContent;
+        if (format.equals("pdf")) {
+            postsContent = getPostsContent("viewed");
+        }
+        else {
+            postsContent = getPostsContent("attendance");
+        }
         if (format.equals("pdf")) {
             fullName = CreatePDF.createPDF(fullName, type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
@@ -495,7 +501,7 @@ public class LogInSecond implements HttpHandler {
     }
 
 
-    private JSONArray getPostsContent() throws IOException {
+    private JSONArray getPostsContent(String filter) throws IOException {
         URL url = new URL("https://api.glassen-it.com/component/socparser/content/posts");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -504,8 +510,8 @@ public class LogInSecond implements HttpHandler {
         connection.setDoOutput(true);
         String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"limit\":\"10\" ,  " +
-                        "\"sort\": {\"type\": \"viewed\",\"order\": \"desc\"}}",
-                thread_id, dateFrom, dateTo);
+                        "\"sort\": {\"type\": \"%s\",\"order\": \"desc\"}}",
+                thread_id, dateFrom, dateTo, filter);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
