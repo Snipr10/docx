@@ -652,12 +652,14 @@ class NewReport {
             int likesComment = 0;
 
             for (Object o : postsContent) {
-                jsonObject = (JSONObject) o;
-                if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
-                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) +
-                        Integer.parseInt(jsonObject.get("attendance").toString()) > 0) {
-                    likesPosts+=1;
-                }
+                likesPosts+=1;
+//
+//                jsonObject = (JSONObject) o;
+//                if (Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
+//                        Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()) +
+//                        Integer.parseInt(jsonObject.get("attendance").toString()) > 0) {
+//                    likesPosts+=1;
+//                }
             }
             for (Object o : commentContent) {
 //                if (Integer.parseInt(((JSONObject) o).get("likes").toString())  > 0) {
