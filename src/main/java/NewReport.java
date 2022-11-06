@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Math.min;
 
 
 class NewReport {
@@ -731,16 +732,17 @@ class NewReport {
                     }
                 }
 
-                if (likesComment== 0) {
+//                if (likesComment== 0) {
+                if (likesPosts== 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph_new(docxModel, String.format("Таблица %s Перечень основных информационных поводов публикаций", tableCount, likesComment), true);
+                    addParagraph_new(docxModel, String.format("Таблица %s Перечень основных информационных поводов публикаций", tableCount, min(likesPosts, 3)), true);
                     tableCount += 1;
                     String text;
                     XWPFTable tableTop10Comment = docxModel.createTable();
                     XWPFTableRow tableTop10CommentRow = tableTop10Comment.getRow(0);
                     XWPFRun run19 = tableTop10CommentRow.getCell(0).getParagraphs().get(0).createRun();
-                    run19.setText("Комментарий");
+                    run19.setText("Текст");
                     run19.setBold(true);
                     run19.setFontSize(12);
                     run19.setFontFamily(format);
@@ -757,16 +759,34 @@ class NewReport {
 
                     tableTop10CommentRow.addNewTableCell();
                     XWPFRun run21 = tableTop10CommentRow.getCell(2).getParagraphs().get(0).createRun();
-                    run21.setText("Резонанс");
+                    run21.setText("Охват");
                     run21.setBold(true);
                     run21.setFontSize(12);
                     run21.setFontFamily(format);
 
-                    for (Object o : commentContent) {
+//                    for (Object o : commentContent) {
+                    int i_z = 0;
+                    String Uri;
+                    for (Object o : postsContent) {
+                        i_z += 1;
+                        if (i_z > 3) {
+                            break;
+                        }
                         jsonObject = (JSONObject) o;
-                        text = updateText(jsonObject.get("text").toString());
-                        getRow(tableTop10Comment, text, jsonObject.get("post_url").toString(),
-                                jsonObject.get("likes").toString());
+                        try {
+                            text = updateText(jsonObject.get("title").toString());
+                        } catch (Exception e) {
+                            text = updateText(jsonObject.get("text").toString());
+
+                        }
+                        try {
+                            Uri = jsonObject.get("post_url").toString();
+                        } catch (Exception e) {
+                            Uri =  jsonObject.get("uri").toString();
+
+                        }
+                        getRow(tableTop10Comment, text, Uri,
+                                jsonObject.get("attendance").toString());
                     }
 
                     for (int x = 0; x < tableTop10Comment.getNumberOfRows(); x++) {
