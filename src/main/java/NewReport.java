@@ -779,6 +779,8 @@ class NewReport {
                             text = updateText(jsonObject.get("text").toString());
 
                         }
+                        if (text.equals(""))
+                            text = updateText(jsonObject.get("text").toString());
                         try {
                             Uri = jsonObject.get("post_url").toString();
                         } catch (Exception e) {
