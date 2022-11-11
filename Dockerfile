@@ -1,4 +1,4 @@
-FROM gradle:5.3.0-jdk-alpine AS TEMP_BUILD_IMAGE
+FROM gradle:7.1.0-jdk11 AS TEMP_BUILD_IMAGE
 ENV APP_HOME=.
 WORKDIR $APP_HOME
 COPY build.gradle $APP_HOME
