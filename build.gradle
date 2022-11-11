@@ -5,13 +5,12 @@ mainClassName = 'Main'
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = '8'
+//sourceCompatibility = JavaVersion.VERSION_17
+//targetCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
-
 }
-
 
 dependencies {
     implementation group: 'org.json', name: 'json', version: '20090211'
@@ -69,8 +68,8 @@ dependencies {
 // https://mvnrepository.com/artifact/org.apache.poi/ooxml-schemas
 
 }
-jar {
-    manifest {
-        attributes 'Main-Class': 'src.main.java.Main'
-    }
-}
+//jar {
+//    manifest {
+//        attributes 'Main-Class': 'src.main.java.Main'
+//    }
+//}
