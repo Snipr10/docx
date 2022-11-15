@@ -1700,6 +1700,9 @@ class NewReport {
         cLink.setAnchor(bookmark);
         //Create the linked text
         CTText ctText=CTText.Factory.newInstance();
+        if (text.length() > 30) {
+            text = text.substring(0, 27) + "...";
+        }
         ctText.setStringValue(text);
         CTR ctr=CTR.Factory.newInstance();
         ctr.setTArray(new CTText[]{ctText});
