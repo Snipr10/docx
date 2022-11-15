@@ -18,6 +18,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,6 +59,7 @@ class NewReport {
                                          JSONArray postsContent,JSONArray commentContent, int first_month, int first_year
     ) {
         int users = Integer.parseInt(usersJson.get("count").toString());
+        NumberFormat f = NumberFormat.getInstance();
 
         try {
             XWPFDocument docxModel = new XWPFDocument();
@@ -176,7 +178,7 @@ class NewReport {
             XWPFRun run_one = addParagraph_one.createRun();
             run_one.setFontFamily(format);
             run_one.setFontSize(12);
-            run_one.setText(String.valueOf(users));
+            run_one.setText(f.format(users));
 
             XWPFTableRow tableRowTwo = table.createRow();
             XWPFRun run1 = tableRowTwo.getCell(0).getParagraphs().get(0).createRun();
@@ -190,7 +192,7 @@ class NewReport {
             XWPFRun run_two = addParagraph_two.createRun();
             run_two.setFontFamily(format);
             run_two.setFontSize(12);
-            run_two.setText(String.valueOf(data.total_sources));
+            run_two.setText(f.format(data.total_sources));
 
 
             XWPFTableRow tableRowThree = table.createRow();
@@ -206,7 +208,7 @@ class NewReport {
             XWPFRun run___2 = addParagraph___2.createRun();
             run___2.setFontFamily(format);
             run___2.setFontSize(12);
-            run___2.setText(String.valueOf(data.total_publication));
+            run___2.setText(f.format(data.total_publication));
 
 //            XWPFTableRow tableRowFour = table.createRow();
 //            XWPFRun run3 = tableRowFour.getCell(0).getParagraphs().get(0).createRun();
@@ -226,7 +228,7 @@ class NewReport {
             XWPFRun run___4 = addParagraph___4.createRun();
             run___4.setFontFamily(format);
             run___4.setFontSize(12);
-            run___4.setText(String.valueOf(data.total_views));
+            run___4.setText(f.format(data.total_views));
 
 
             for (int x = 0; x < table.getNumberOfRows(); x++) {
@@ -370,42 +372,42 @@ class NewReport {
 
                     XWPFTableRow tableRowTwoIst = tableIst.createRow();
                     setText(tableRowTwoIst, "Вконтакте", 0);
-                    setText(tableRowTwoIst, String.valueOf(total_vk), 1);
+                    setText(tableRowTwoIst, f.format(total_vk), 1);
                     setText(tableRowTwoIst, String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThreeIst = tableIst.createRow();
                     setText(tableRowThreeIst, "Facebook", 0);
-                    setText(tableRowThreeIst, String.valueOf(total_fb), 1);
+                    setText(tableRowThreeIst, f.format(total_fb), 1);
                     setText(tableRowThreeIst, String.valueOf(Math.round((float) total_fb * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThIst = tableIst.createRow();
                     setText(tableRowThIst, "Twitter", 0);
-                    setText(tableRowThIst, String.valueOf(total_tw), 1);
+                    setText(tableRowThIst, f.format(total_tw), 1);
                     setText(tableRowThIst, String.valueOf(Math.round((float) total_tw * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowFIst = tableIst.createRow();
                     setText(tableRowFIst, "Инстаграм", 0);
-                    setText(tableRowFIst, String.valueOf(total_ig), 1);
+                    setText(tableRowFIst, f.format(total_ig), 1);
                     setText(tableRowFIst, String.valueOf(Math.round((float) total_ig * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSixIst = tableIst.createRow();
                     setText(tableRowSixIst, "Telegram", 0);
-                    setText(tableRowSixIst, String.valueOf(total_tg), 1);
+                    setText(tableRowSixIst, f.format(total_tg), 1);
                     setText(tableRowSixIst, String.valueOf(Math.round((float) total_tg * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevenIst = tableIst.createRow();
                     setText(tableRowSevenIst, "YouTube", 0);
-                    setText(tableRowSevenIst, String.valueOf(total_yt), 1);
+                    setText(tableRowSevenIst, f.format(total_yt), 1);
                     setText(tableRowSevenIst, String.valueOf(Math.round((float) total_yt * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevIst = tableIst.createRow();
                     setText(tableRowSevIst, "СМИ", 0);
-                    setText(tableRowSevIst, String.valueOf(total_gs), 1);
+                    setText(tableRowSevIst, f.format(total_gs), 1);
                     setText(tableRowSevIst, String.valueOf(Math.round((float) total_gs * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevAll = tableIst.createRow();
                     setText(tableRowSevAll, "Итог", 0);
-                    setText(tableRowSevAll, String.valueOf(all), 1);
+                    setText(tableRowSevAll, f.format(all), 1);
                     setText(tableRowSevAll, "100", 2);
 
 
@@ -716,18 +718,18 @@ class NewReport {
 //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
                         setText(tableRowTwoIst, text, 0);
-                        setText(tableRowTwoIst, jsonObject.get("attendance").toString(), 1);
+                        setText(tableRowTwoIst, f.format(jsonObject.get("attendance")), 1);
 
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Post.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
-                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7000));
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7500));
 //                        XWPFTableCell cell1 = row.getCell(1);
 //                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
 //                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
                         XWPFTableCell cell2 = row.getCell(1);
-                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2500));
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
                     }
                 }
@@ -788,18 +790,18 @@ class NewReport {
 
                         }
                         getRow(tableTop10Comment, text, Uri,
-                                jsonObject.get("attendance").toString());
+                                f.format(jsonObject.get("attendance")));
                     }
 
                     for (int x = 0; x < tableTop10Comment.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Comment.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
-                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(6500));
                         XWPFTableCell cell1 = row.getCell(1);
-                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
+                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
                         cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
                         XWPFTableCell cell2 = row.getCell(2);
-                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1000));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
                     }
                 }
@@ -842,18 +844,18 @@ class NewReport {
                         //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
                         setText(tableRowTwoIst, text, 0);
-                        setText(tableRowTwoIst, jsonObject.get("uri").toString(), 1);
+                        setText(tableRowTwoIst, jsonObject.get("uri").toString(), 1, true);
 
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Post.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
-                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7000));
+                        cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7500));
                         //                        XWPFTableCell cell1 = row.getCell(1);
                         //                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
                         //                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
                         XWPFTableCell cell2 = row.getCell(1);
-                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2500));
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
                     }
                 }
@@ -899,7 +901,7 @@ class NewReport {
     private static void getRow(XWPFTable table, String str1, String str2, String str3){
         XWPFTableRow tableRowTwoIst = table.createRow();
         setText(tableRowTwoIst, str1, 0);
-        setText(tableRowTwoIst, str2, 1);
+        setText(tableRowTwoIst, str2, 1, true);
         setText(tableRowTwoIst, str3, 2);
 
     }
@@ -1653,7 +1655,7 @@ class NewReport {
         deleteDataInString(sb, "</div.*?>");
         String res = sb.toString();
         if (res.length() > commentsLenght) {
-            res = res.substring(0, commentsLenght);
+            res = res.substring(0, commentsLenght) + "...";
         }
         return res;
     }
@@ -1672,14 +1674,53 @@ class NewReport {
         }
         return sb;
     }
-
-    private static void setText(XWPFTableRow tableRow, String data, int celNum){
+    private static void setText(XWPFTableRow tableRow, String data, int celNum) {
+        setText(tableRow, data, celNum, false);
+    }
+    private static void setText(XWPFTableRow tableRow, String data, int celNum, boolean is_link){
         XWPFTableCell cell_two = tableRow.getCell(celNum);
         cell_two.removeParagraph(0);
         XWPFParagraph addParagraph_two = cell_two.addParagraph();
-        XWPFRun run_two = addParagraph_two.createRun();
-        run_two.setFontFamily(format);
-        run_two.setFontSize(12);
-        run_two.setText(data);
+        if (is_link) {
+            addParagraph_two.setAlignment(ParagraphAlignment.CENTER);
+            addHyperlink(addParagraph_two, data, data);
+        }
+        else {
+            XWPFRun run_two = addParagraph_two.createRun();
+            run_two.setFontFamily(format);
+            run_two.setFontSize(12);
+            run_two.setText(data);
+        }
     }
+
+
+    private static void addHyperlink(XWPFParagraph para, String text, String bookmark) {
+        //Create hyperlink in paragraph
+        CTHyperlink cLink=para.getCTP().addNewHyperlink();
+        cLink.setAnchor(bookmark);
+        //Create the linked text
+        CTText ctText=CTText.Factory.newInstance();
+        ctText.setStringValue(text);
+        CTR ctr=CTR.Factory.newInstance();
+        ctr.setTArray(new CTText[]{ctText});
+
+        //Create the formatting
+        CTFonts fonts = CTFonts.Factory.newInstance();
+        fonts.setAscii("Times New Roman" );
+        CTRPr rpr = ctr.addNewRPr();
+        CTColor colour = CTColor.Factory.newInstance();
+        colour.setVal("0000FF");
+        rpr.setColor(colour);
+        rpr.setRFonts(fonts);
+        CTHpsMeasure size = CTHpsMeasure.Factory.newInstance();
+        size.setVal(new BigInteger("24"));
+        rpr.setSz(size);
+        CTRPr rpr1 = ctr.addNewRPr();
+        rpr1.addNewU().setVal(STUnderline.SINGLE);
+
+
+        //Insert the linked text into the link
+        cLink.setRArray(new CTR[]{ctr});
+    }
+
 }
