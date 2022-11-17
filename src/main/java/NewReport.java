@@ -1,4 +1,5 @@
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.Units;
@@ -178,7 +179,7 @@ class NewReport {
             XWPFRun run_one = addParagraph_one.createRun();
             run_one.setFontFamily(format);
             run_one.setFontSize(12);
-            run_one.setText(f.format(users));
+            run_one.setText(get_format_stng(users));
 
             XWPFTableRow tableRowTwo = table.createRow();
             XWPFRun run1 = tableRowTwo.getCell(0).getParagraphs().get(0).createRun();
@@ -192,7 +193,7 @@ class NewReport {
             XWPFRun run_two = addParagraph_two.createRun();
             run_two.setFontFamily(format);
             run_two.setFontSize(12);
-            run_two.setText(f.format(data.total_sources));
+            run_two.setText(get_format_stng(data.total_sources));
 
 
             XWPFTableRow tableRowThree = table.createRow();
@@ -208,7 +209,7 @@ class NewReport {
             XWPFRun run___2 = addParagraph___2.createRun();
             run___2.setFontFamily(format);
             run___2.setFontSize(12);
-            run___2.setText(f.format(data.total_publication));
+            run___2.setText(get_format_stng(data.total_publication));
 
 //            XWPFTableRow tableRowFour = table.createRow();
 //            XWPFRun run3 = tableRowFour.getCell(0).getParagraphs().get(0).createRun();
@@ -228,7 +229,7 @@ class NewReport {
             XWPFRun run___4 = addParagraph___4.createRun();
             run___4.setFontFamily(format);
             run___4.setFontSize(12);
-            run___4.setText(f.format(data.total_views));
+            run___4.setText(get_format_stng(data.total_views));
 
 
             for (int x = 0; x < table.getNumberOfRows(); x++) {
@@ -285,9 +286,9 @@ class NewReport {
             for ( int i = 0; i < variableDouble.length; i++) {
                 variableDouble[i] = variableDouble[i]/allComments * 100;
             }
-
-            diagramCount = addPieFormat(docxModel, new String[]{"Негативная", "Позитивная", "Нейтральная"},variableDouble,
-                    String.format("Диаграмма %s Cтатистика эмоционального окраса в публикациях", diagramCount), diagramCount, true);
+//
+//            diagramCount = addPieFormat(docxModel, new String[]{"Негативная", "Позитивная", "Нейтральная"},variableDouble,
+//                    String.format("Диаграмма %s Cтатистика эмоционального окраса в публикациях", diagramCount), diagramCount, true);
 
 
             JSONArray positive = (JSONArray) (jsonPostTotal).get("positive");
@@ -297,18 +298,129 @@ class NewReport {
 
 
             double commnetsCount = 0;
-            for (Double dV: variableDouble) {
-                commnetsCount +=dV;
+//            for (Double dV: variableDouble) {
+//                commnetsCount +=dV;
+//            }
+//            if (commnetsCount >0) {
+//                DataForArea d = new DataForArea(type, totalComments, positive, netural,
+//                        negative, first_month, first_year);
+////                diagramCount = addArea(docxModel, d.categoriesPostType,
+////                        d.valuesNegative,
+////                        d.valuesPositive,
+////                        d.valuesNetural,
+////                        String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
+//            }
+            addParagraph(docxModel, "Статистика эмоционального окраса в публикациях");
+
+            XWPFTable table_r = docxModel.createTable();
+
+            int total_count =  positive.length() + netural.length() + negative.length();
+            int positive_t = (Integer) ((positive.length() *100) / total_count) ;
+            int netural_t= (Integer) ((netural.length() *100) / total_count) ;
+            int negative_t = 100 - positive_t - netural_t ;
+            // totalComments
+
+
+            XWPFTableRow tableRowTwo_n = table_r.getRow(0);
+            XWPFRun run1_n = tableRowTwo_n.getCell(0).getParagraphs().get(0).createRun();
+            run1_n.setText("Тональность публикаций");
+            run1_n.setBold(true);
+            run1_n.setFontSize(12);
+            run1_n.setFontFamily(format);
+            XWPFTableCell cell_two_n = tableRowTwo_n.addNewTableCell();
+            cell_two_n.removeParagraph(0);
+            XWPFParagraph addParagraph_two_n = cell_two_n.addParagraph();
+            XWPFRun run_two_n = addParagraph_two_n.createRun();
+            run_two_n.setFontFamily(format);
+            run_two_n.setFontSize(12);
+            run_two_n.setBold(true);
+            run_two_n.setText("Доля публикаций");
+
+            XWPFTableRow tableRowThree_r = table_r.createRow();
+            XWPFRun run2_r = tableRowThree_r.getCell(0).getParagraphs().get(0).createRun();
+            run2_r.setText("Негативная");
+            run2_r.setFontSize(12);
+            run2_r.setFontFamily(format);
+            XWPFTableCell cell__2_r = tableRowThree_r.getCell(1);
+            cell__2_r.removeParagraph(0);
+            XWPFParagraph addParagraph___2_r = cell__2_r.addParagraph();
+            XWPFRun run___2_r = addParagraph___2_r.createRun();
+            run___2_r.setFontFamily(format);
+            run___2_r.setFontSize(12);
+            run___2_r.setText(String.valueOf(netural_t) + "%");
+
+            XWPFTableRow tableRowThree_r_1 = table_r.createRow();
+            XWPFRun run2_r_1 = tableRowThree_r_1.getCell(0).getParagraphs().get(0).createRun();
+            run2_r_1.setText("Позитивная");
+            run2_r_1.setFontSize(12);
+            run2_r_1.setFontFamily(format);
+            XWPFTableCell cell__2_r_1 =tableRowThree_r_1.getCell(1);
+            cell__2_r_1.removeParagraph(0);
+            XWPFParagraph addParagraph___2_r_1 = cell__2_r_1.addParagraph();
+            XWPFRun run___2_r_1 = addParagraph___2_r_1.createRun();
+            run___2_r_1.setFontFamily(format);
+            run___2_r_1.setFontSize(12);
+            run___2_r_1.setText(String.valueOf(positive_t)+ "%");
+
+
+            XWPFTableRow tableRowThree_r_2 = table_r.createRow();
+            XWPFRun run2_r_2 = tableRowThree_r_2.getCell(0).getParagraphs().get(0).createRun();
+            run2_r_2.setText("Нейтральная");
+            run2_r_2.setFontSize(12);
+            run2_r_2.setFontFamily(format);
+            XWPFTableCell cell__2_r_2 =tableRowThree_r_2.getCell(1);
+            cell__2_r_2.removeParagraph(0);
+            XWPFParagraph addParagraph___2_r_2 = cell__2_r_2.addParagraph();
+            XWPFRun run___2_r_2 = addParagraph___2_r_2.createRun();
+            run___2_r_2.setFontFamily(format);
+            run___2_r_2.setFontSize(12);
+            run___2_r_2.setText(String.valueOf(negative_t)+ "%");
+
+            XWPFTableRow tableRowThree_r_3 = table_r.createRow();
+            XWPFRun run2_r_3 = tableRowThree_r_3.getCell(0).getParagraphs().get(0).createRun();
+            run2_r_3.setText("Всего");
+            run2_r_3.setFontSize(12);
+            run2_r_3.setFontFamily(format);
+            XWPFTableCell cell__2_r_3 =tableRowThree_r_3.getCell(1);
+            cell__2_r_3.removeParagraph(0);
+            XWPFParagraph addParagraph___2_r_3 = cell__2_r_3.addParagraph();
+            XWPFRun run___2_r_3 = addParagraph___2_r_3.createRun();
+            run___2_r_3.setFontFamily(format);
+            run___2_r_3.setFontSize(12);
+            run___2_r_3.setText("100%");
+
+            for (int x = 0; x < table_r.getNumberOfRows(); x++) {
+                XWPFTableRow row = table_r.getRow(x);
+                XWPFTableCell cell0 = row.getCell(0);
+                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(5000));
+                row.getCell(1).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4500));
+
+//                XWPFTableCell cell1 = row.getCell(1);
+//                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4500));
+//                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.RIGHT);
             }
-            if (commnetsCount >0) {
-                DataForArea d = new DataForArea(type, totalComments, positive, netural,
-                        negative, first_month, first_year);
-//                diagramCount = addArea(docxModel, d.categoriesPostType,
-//                        d.valuesNegative,
-//                        d.valuesPositive,
-//                        d.valuesNetural,
-//                        String.format("Диаграмма %s Динамика распределения публикаций по тональности", diagramCount), diagramCount);
-            }
+
+//
+//
+//            XWPFTableCell cell__2_r_1 = tableRowThree_r_1.getCell(1);
+//            cell__2_r.removeParagraph(0);
+//            XWPFParagraph addParagraph___2_r_1 = cell__2_r_1.addParagraph();
+//            XWPFRun run___2_r_1 = addParagraph___2_r_1.createRun();
+//            run___2_r_1.setFontFamily(format);
+//            run___2_r_1.setFontSize(12);
+//            run___2_r_1.setText("12");
+//            for (int x = 0; x < table_r.getNumberOfRows(); x++) {
+//                XWPFTableRow row = table_r.getRow(x);
+//                XWPFTableCell cell0 = row.getCell(0);
+//                cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4500));
+//                XWPFTableCell cell1 = row.getCell(1);
+//                cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(4500));
+//                cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.RIGHT);
+//            }
+
+
+
+
             int total_vk = getTotalMedia(jsonPosts, "vk");
             int total_tw = getTotalMedia(jsonPosts, "tw");
             int total_fb = getTotalMedia(jsonPosts, "fb");
@@ -372,42 +484,42 @@ class NewReport {
 
                     XWPFTableRow tableRowTwoIst = tableIst.createRow();
                     setText(tableRowTwoIst, "Вконтакте", 0);
-                    setText(tableRowTwoIst, f.format(total_vk), 1);
+                    setText(tableRowTwoIst,  get_format_stng(total_vk), 1);
                     setText(tableRowTwoIst, String.valueOf(Math.round((float) total_vk * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThreeIst = tableIst.createRow();
                     setText(tableRowThreeIst, "Facebook", 0);
-                    setText(tableRowThreeIst, f.format(total_fb), 1);
+                    setText(tableRowThreeIst, get_format_stng(total_fb), 1);
                     setText(tableRowThreeIst, String.valueOf(Math.round((float) total_fb * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowThIst = tableIst.createRow();
                     setText(tableRowThIst, "Twitter", 0);
-                    setText(tableRowThIst, f.format(total_tw), 1);
+                    setText(tableRowThIst, get_format_stng(total_tw), 1);
                     setText(tableRowThIst, String.valueOf(Math.round((float) total_tw * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowFIst = tableIst.createRow();
                     setText(tableRowFIst, "Инстаграм", 0);
-                    setText(tableRowFIst, f.format(total_ig), 1);
+                    setText(tableRowFIst, get_format_stng(total_ig), 1);
                     setText(tableRowFIst, String.valueOf(Math.round((float) total_ig * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSixIst = tableIst.createRow();
                     setText(tableRowSixIst, "Telegram", 0);
-                    setText(tableRowSixIst, f.format(total_tg), 1);
+                    setText(tableRowSixIst, get_format_stng(total_tg), 1);
                     setText(tableRowSixIst, String.valueOf(Math.round((float) total_tg * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevenIst = tableIst.createRow();
                     setText(tableRowSevenIst, "YouTube", 0);
-                    setText(tableRowSevenIst, f.format(total_yt), 1);
+                    setText(tableRowSevenIst, get_format_stng(total_yt), 1);
                     setText(tableRowSevenIst, String.valueOf(Math.round((float) total_yt * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevIst = tableIst.createRow();
                     setText(tableRowSevIst, "СМИ", 0);
-                    setText(tableRowSevIst, f.format(total_gs), 1);
+                    setText(tableRowSevIst, get_format_stng(total_gs), 1);
                     setText(tableRowSevIst, String.valueOf(Math.round((float) total_gs * 100.00 / (float) all * 100.00) / 100.0), 2);
 
                     XWPFTableRow tableRowSevAll = tableIst.createRow();
                     setText(tableRowSevAll, "Итог", 0);
-                    setText(tableRowSevAll, f.format(all), 1);
+                    setText(tableRowSevAll, get_format_stng(all), 1);
                     setText(tableRowSevAll, "100", 2);
 
 
@@ -421,6 +533,9 @@ class NewReport {
                         XWPFTableCell cell2 = row.getCell(2);
                         cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1500));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                        AligmentCenter(cell0);
+                        AligmentCenter(cell1);
+                        AligmentCenter(cell2);
                     }
                 }
 
@@ -717,20 +832,26 @@ class NewReport {
 //                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(), res(jsonObject)
 //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
-                        setText(tableRowTwoIst, text, 0);
-                        setText(tableRowTwoIst, f.format(jsonObject.get("attendance")), 1);
+                        setText(tableRowTwoIst, text.replaceAll("\\<[^>]*>",""), 0);
+                        setText(tableRowTwoIst, get_format_stng((Integer) jsonObject.get("attendance")), 1);
 
                     }
                     for (int x = 0; x < tableTop10Post.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Post.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
+
+
                         cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7500));
+                        cell0.getParagraphs().get(0).setVerticalAlignment(TextAlignment.CENTER);
+                        AligmentCenter(cell0);
+
 //                        XWPFTableCell cell1 = row.getCell(1);
 //                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
 //                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
                         XWPFTableCell cell2 = row.getCell(1);
-                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                        cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
+                        AligmentCenter(cell2);
                     }
                 }
 
@@ -789,20 +910,29 @@ class NewReport {
                             Uri =  jsonObject.get("uri").toString();
 
                         }
-                        getRow(tableTop10Comment, text, Uri,
-                                f.format(jsonObject.get("attendance")));
+                        getRow(tableTop10Comment, text.replaceAll("\\<[^>]*>",""), Uri,
+                                get_format_stng((Integer) jsonObject.get("attendance")));
                     }
 
                     for (int x = 0; x < tableTop10Comment.getNumberOfRows(); x++) {
                         XWPFTableRow row = tableTop10Comment.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
                         cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(6500));
+                        cell0.getParagraphs().get(0).setVerticalAlignment(TextAlignment.CENTER);
+                        cell0.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        AligmentCenter(cell0);
+
                         XWPFTableCell cell1 = row.getCell(1);
                         cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
                         cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        cell1.getParagraphs().get(0).setVerticalAlignment(TextAlignment.CENTER);
+                        AligmentCenter(cell1);
+
                         XWPFTableCell cell2 = row.getCell(2);
                         cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(1000));
                         cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                        AligmentCenter(cell2);
+
                     }
                 }
                 if (likesPosts == 0) {
@@ -843,7 +973,7 @@ class NewReport {
                         //                        getRow(tableTop10Post, text, jsonObject.get("uri").toString(), res(jsonObject)
                         //                                );
                         XWPFTableRow tableRowTwoIst = tableTop10Post.createRow();
-                        setText(tableRowTwoIst, text, 0);
+                        setText(tableRowTwoIst, text.replaceAll("\\<[^>]*>",""), 0);
                         setText(tableRowTwoIst, jsonObject.get("uri").toString(), 1, true);
 
                     }
@@ -851,13 +981,19 @@ class NewReport {
                         XWPFTableRow row = tableTop10Post.getRow(x);
                         XWPFTableCell cell0 = row.getCell(0);
                         cell0.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(7500));
+                        cell0.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        AligmentCenter(cell0);
+
                         //                        XWPFTableCell cell1 = row.getCell(1);
                         //                        cell1.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(3000));
                         //                        cell1.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
                         XWPFTableCell cell2 = row.getCell(1);
                         cell2.getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(2000));
-                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                        cell2.getParagraphs().get(0).setAlignment(ParagraphAlignment.LEFT);
+                        AligmentCenter(cell2);
+
                     }
+
                 }
             }
             CTP ctp = CTP.Factory.newInstance();
@@ -884,6 +1020,11 @@ class NewReport {
         return new XWPFDocument();
 
     }
+    private static void AligmentCenter(XWPFTableCell cell) {
+        cell.getParagraphArray(0).setSpacingAfter(0);
+        cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+    }
+
     public static String res(JSONObject jsonObject){
         return String.valueOf(Integer.parseInt(jsonObject.get("viewed").toString()) + Integer.parseInt(jsonObject.get("reposts").toString()) +
                 Integer.parseInt(jsonObject.get("likes").toString()) + Integer.parseInt(jsonObject.get("comments").toString()));
@@ -1079,8 +1220,8 @@ class NewReport {
         series.setTitle("Сми", null);
         series2.setTitle("Соцмедиа", null);
 
-        XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.BLUE_VIOLET));
-
+        XDDFSolidFillProperties fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.YELLOW));
+        transp(fill);
         XDDFShapeProperties properties = series.getShapeProperties();
         if (properties == null) {
             properties = new XDDFShapeProperties();
@@ -1089,6 +1230,7 @@ class NewReport {
         series.setShapeProperties(properties);
 
         fill = new XDDFSolidFillProperties(XDDFColor.from(PresetColor.CORNFLOWER_BLUE));
+        transp(fill);
 
         properties = series2.getShapeProperties();
         if (properties == null) {
@@ -1105,7 +1247,6 @@ class NewReport {
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowCatName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewShowSerName().setVal(false);
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewDLblPos().setVal(org.openxmlformats.schemas.drawingml.x2006.chart.STDLblPos.OUT_END);
-
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().addNewTxPr()
                     .addNewBodyPr().setRot((int)(-90.00 * 60000));
             chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray(i).getDLbls().getTxPr()
@@ -1113,7 +1254,8 @@ class NewReport {
         }
 
         chart.plot(data);
-
+        chart.getCTChart().getPlotArea().getBarChartArray(0).addNewOverlap().setVal((byte)-25);
+        chart.getCTChart().getPlotArea().getBarChartArray(0).addNewGapWidth().setVal(500);
         XDDFChartLegend legend = chart.getOrAddLegend();
         legend.setPosition(LegendPosition.TOP);
 //        legend.setOverlay(true);
@@ -1123,7 +1265,13 @@ class NewReport {
         legend.setTextBody(legendTextBody);
         return dia;
     }
-
+    private static void transp(XDDFSolidFillProperties fill ) {
+        org.openxmlformats.schemas.drawingml.x2006.main.CTSolidColorFillProperties ctSolidColorFillProperties =
+                (org.openxmlformats.schemas.drawingml.x2006.main.CTSolidColorFillProperties) fill.getXmlObject();
+        org.openxmlformats.schemas.drawingml.x2006.main.CTPresetColor ctPresetColor = ctSolidColorFillProperties.getPrstClr();
+        org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveFixedPercentage ctPositiveFixedPercentage = ctPresetColor.addNewAlpha();
+        ctPositiveFixedPercentage.setVal(54000);
+    }
 
     private static int addPie(XWPFDocument document,  String[] categories, Double[] valuesA, String name, int dia) throws IOException, InvalidFormatException {
         return addPie( document, categories,  valuesA, name, dia, false);
@@ -1693,7 +1841,10 @@ class NewReport {
         }
     }
 
+    private static String get_format_stng(int i) {
+        return String.format(Locale.CANADA_FRENCH, "%,d", i);
 
+    }
     private static void addHyperlink(XWPFParagraph para, String text, String bookmark) {
         //Create hyperlink in paragraph
         CTHyperlink cLink=para.getCTP().addNewHyperlink();
