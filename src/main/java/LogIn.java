@@ -13,15 +13,22 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 public class LogIn implements HttpHandler {
+
     CookieManager cookieManager;
     String dateFrom;
     String dateTo;
     String thread_id;
     String type;
     String DOMAIN = "https://isiao.glassen-it.com";
+
+    LogIn(String domain){
+        this.DOMAIN = domain;
+
+    }
 
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (exchange.isInIoThread()) {
@@ -96,8 +103,11 @@ public class LogIn implements HttpHandler {
             System.out.println(cookie.getDomain());
             System.out.println(cookie);
         }
+
         url = new URL(DOMAIN + "/component/socparser/authorization/login");
         connection = (HttpURLConnection) url.openConnection();
+        TimeUnit.SECONDS.sleep(1);
+
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
         connection.setRequestProperty("Accept", "application/json");
@@ -107,9 +117,12 @@ public class LogIn implements HttpHandler {
             os.write(input, 0, input.length);
             os.flush();
         }
+        TimeUnit.SECONDS.sleep(1);
 
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+            TimeUnit.SECONDS.sleep(1);
+
             StringBuilder response = new StringBuilder();
             String responseLine = null;
             while ((responseLine = br.readLine()) != null) {

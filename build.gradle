@@ -15,6 +15,8 @@ repositories {
 dependencies {
     implementation group: 'org.json', name: 'json', version: '20090211'
 //    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '5.0.0'
+    implementation group: 'io.github.cdimascio', name: 'java-dotenv', version: '5.2.2'
+
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
     implementation group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '4.1.2'
     implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'

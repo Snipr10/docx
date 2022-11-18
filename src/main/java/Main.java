@@ -3,6 +3,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 
@@ -22,8 +23,11 @@ public class Main {
                 .setHandler(new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        Dotenv dotenv = null;
+                        dotenv = Dotenv.configure().load();
                         if (exchange.getRequestMethod().toString().equals("POST")) {
-                            LogIn s = new LogIn();
+                            LogIn s = new LogIn(dotenv.get("DOMAIN"));
+
                             s.handleRequest(exchange);
                         }
                         else {
