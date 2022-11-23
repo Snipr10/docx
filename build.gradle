@@ -1,22 +1,31 @@
-apply plugin: 'java'
-apply plugin:'application'
+plugins {
+    id 'java'
+    id 'application'
+}
 
-mainClassName = 'Main'
-group 'org.example'
-version '1.0-SNAPSHOT'
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    enabled = true
+    manifest {
+        attributes 'Implementation-Title': 'report',
+                'Main-Class': 'Main'
 
-//sourceCompatibility = JavaVersion.VERSION_17
-//targetCompatibility = JavaVersion.VERSION_17
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }{
+        exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+    }
+}
+
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    implementation group: 'org.json', name: 'json', version: '20090211'
-//    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '5.0.0'
+//    implementation group: 'org.json', name: 'json', version: '20090211'
     implementation group: 'io.github.cdimascio', name: 'java-dotenv', version: '5.2.2'
-
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
     implementation group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '4.1.2'
     implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
@@ -33,45 +42,14 @@ dependencies {
     implementation group: 'com.marcosbarbero.cloud', name: 'spring-cloud-zuul-ratelimit', version: '2.4.2.RELEASE'
     implementation group: 'org.json', name: 'json', version: '20180813'
     implementation group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'
-    implementation group: 'org.docx4j', name: 'docx4j-ImportXHTML', version: '8.0.0'
+//    implementation group: 'org.docx4j', name: 'docx4j-ImportXHTML', version: '8.0.0'
     implementation group: 'org.jfree', name: 'jfreechart', version: '1.0.18'
     implementation group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'
 
     implementation group: 'com.itextpdf', name: 'kernel', version: '7.1.2'
     implementation group: 'com.itextpdf', name: 'layout', version: '7.0.0'
-
-
-
-//
-////    compile group: 'fr.opensagres.xdocreport', name: 'fr.opensagres.poi.xwpf.converter.pdf', version: '2.0.1'
-////    compile group: 'fr.opensagres.xdocreport', name: 'fr.opensagres.poi.xwpf.converter.core', version: '2.0.1'
-//    compile group: 'fr.opensagres.xdocreport', name: 'fr.opensagres.xdocreport.itext.extension', version: '2.0.1'
-//    compile group: 'com.lowagie', name: 'itext', version: '2.1.7'
-//
-////    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'
-//
-////    compile group: 'fr.opensagres.xdocreport', name: 'fr.opensagres.poi.xwpf.converter.pdf', version: '2.0.2'
-//
-//    compile group: 'com.documents4j', name: 'documents4j-local', version: '1.1.5'
-//    compile group: 'com.documents4j', name: 'documents4j-transformer-msoffice-word', version: '1.1.5'
-//// https://mvnrepository.com/artifact/jfree/jcommon
-////    implementation group: 'jfree', name: 'jcommon', version: '1.0.14'
-//
-//
-//    compile group: 'org.apache.commons', name: 'commons-compress', version: '1.19'
-//
-//    compile group: 'io.undertow', name: 'undertow-core', version: '2.0.22.Final'
-//// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-zuul
-//    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-zuul', version: '2.2.6.RELEASE'
-//// https://mvnrepository.com/artifact/com.marcosbarbero.cloud/spring-cloud-zuul-ratelimit
-//    compile group: 'com.marcosbarbero.cloud', name: 'spring-cloud-zuul-ratelimit', version: '2.4.2.RELEASE'
-
-
-// https://mvnrepository.com/artifact/org.apache.poi/ooxml-schemas
-
 }
-//jar {
-//    manifest {
-//        attributes 'Main-Class': 'src.main.java.Main'
-//    }
-//}
+
+application {
+    mainClassName = 'Main'
+}
