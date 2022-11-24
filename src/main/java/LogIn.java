@@ -153,7 +153,9 @@ public class LogIn implements HttpHandler {
             total_views += Integer.parseInt(((JSONArray) o).get(1).toString());
         }
         DataForDocx data = new DataForDocx(total_sources, total_publication, total_comment, total_views);
-        JSONArray postsContent = getPostsContent();
+        JSONArray postsContent = getPostsContent("viewed");
+        JSONArray postsContentLikes = getPostsContent("likes");
+
         JSONArray commentContent = getCommentContent();
         JSONArray posts = getPosts();
         JSONObject stat = getStats();
@@ -175,14 +177,14 @@ public class LogIn implements HttpHandler {
         if (format.equals("pdf")) {
             fullName = CreatePDF.createPDF(fullName, type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                    first_month, first_year
+                    first_month, first_year, postsContentLikes
             );
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                     "application/pdf");
         } else {
             XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                    first_month, first_year
+                    first_month, first_year, postsContentLikes
             );
 
             fullName = fullName + ".docx";
@@ -504,7 +506,7 @@ public class LogIn implements HttpHandler {
     }
 
 
-    private JSONArray getPostsContent() throws IOException {
+    private JSONArray getPostsContent(String sortType) throws IOException {
         URL url = new URL(DOMAIN + "/component/socparser/content/posts");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -513,8 +515,8 @@ public class LogIn implements HttpHandler {
         connection.setDoOutput(true);
         String jsonInputString = String.format(
                 "{\"thread_id\": \"%s\", \"from\": \"%s\", \"to\": \"%s\", \"limit\":\"10\" ,  " +
-                        "\"sort\": {\"type\": \"viewed\",\"order\": \"desc\"}}",
-                thread_id, dateFrom, dateTo);
+                        "\"sort\": {\"type\": \"%s\",\"order\": \"desc\"}}",
+                thread_id, dateFrom, dateTo, sortType);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");

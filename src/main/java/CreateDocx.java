@@ -50,7 +50,8 @@ class WordWorker {
     public static XWPFDocument createDoc(String type, String name, String date,
                                  DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat,
                                  JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts,
-                                 JSONArray postsContent,JSONArray commentContent, int first_month, int first_year
+                                 JSONArray postsContent,JSONArray commentContent, int first_month, int first_year,
+                                         JSONArray postsContentLikes
                                          ) {
         int users = Integer.parseInt(usersJson.get("count").toString());
 
@@ -674,16 +675,16 @@ class WordWorker {
                     }
                 }
 
-                if (likesComment== 0) {
+                if (postsContentLikes.length()== 0) {
                     dataLost(docxModel);
                 } else {
-                    addParagraph(docxModel, String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment));
+                    addParagraph(docxModel, String.format("Таблица %s Топ-%s публикаций по количеству лайков", tableCount, postsContentLikes.length()));
                     tableCount += 1;
                     String text;
                     XWPFTable tableTop10Comment = docxModel.createTable();
                     XWPFTableRow tableTop10CommentRow = tableTop10Comment.getRow(0);
                     XWPFRun run19 = tableTop10CommentRow.getCell(0).getParagraphs().get(0).createRun();
-                    run19.setText("Комментарий");
+                    run19.setText("Публикация");
                     run19.setBold(true);
 
                     tableTop10CommentRow.addNewTableCell();
@@ -697,10 +698,24 @@ class WordWorker {
                     run21.setText("Резонанс");
                     run21.setBold(true);
 
-                    for (Object o : commentContent) {
+                    for (Object o : postsContentLikes) {
                         jsonObject = (JSONObject) o;
-                        text = updateText(jsonObject.get("text").toString());
-                        getRow(tableTop10Comment, text, jsonObject.get("post_url").toString(),
+
+                        try {
+                            if (jsonObject.get("title").equals("")){
+                                text = updateText(jsonObject.get("text").toString());
+
+                            }
+                            else {
+                                text = updateText(jsonObject.get("title") + "\n" + jsonObject.get("text").toString());
+
+                            }
+                        }catch (Exception e){
+                            text = updateText(jsonObject.get("text").toString());
+
+                        }
+
+                        getRow(tableTop10Comment, text, jsonObject.get("uri").toString(),
                                 jsonObject.get("likes").toString());
                     }
 

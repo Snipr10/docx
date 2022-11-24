@@ -82,7 +82,7 @@ public class CreatePDF {
     public CreatePDF() throws IOException, DocumentException {
     }
 
-    public static String createPDF(String docName, String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year) throws DocumentException, IOException, ParseException, FontFormatException {
+    public static String createPDF(String docName, String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year, JSONArray postsContentLikes) throws DocumentException, IOException, ParseException, FontFormatException {
         DefaultFontMapper mapper = new DefaultFontMapper();
         mapper.insertDirectory(fontUrl);
         BaseFontParameters pp = mapper.getBaseFontParameters("Arial Unicode MS");
@@ -586,8 +586,8 @@ public class CreatePDF {
 
                 document.add(tablePublication);
             }
-            if (likesComment> 0) {
-                title = String.format("Таблица %s Топ-%s комментариев к публикациям по сумме лайков", tableCount, likesComment);
+            if (postsContentLikes.length()> 0) {
+                title = String.format("Таблица %s Топ-%s публикаций по количеству лайков", tableCount, postsContentLikes.length());
                 c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
                 c.setGenericTag(title);
                 paragraphPublication = new Paragraph(c);
@@ -599,14 +599,27 @@ public class CreatePDF {
                 tablePublication.setLockedWidth(true);
                 document.add(new Phrase(""));
                 ++tableCount;
-                addToTable3(tablePublication, "Комментарий", "URL", "Резонанс", fontFrazeBOLD);
-                var80 = commentContent.iterator();
+                addToTable3(tablePublication, "Публикация", "URL", "Резонанс", fontFrazeBOLD);
+                var80 = postsContentLikes.iterator();
 
                 while (var80.hasNext()) {
                     o = var80.next();
                     jsonObject = (JSONObject) o;
-                    text = WordWorker.updateText(jsonObject.get("text").toString());
-                    addToTable3(tablePublication, text, jsonObject.get("post_url").toString(), jsonObject.get("likes").toString(), fontFraze, false);
+                    try {
+                        if (jsonObject.get("title").equals("")){
+                            text = WordWorker.updateText(jsonObject.get("text").toString());
+
+                        }
+                        else {
+                            text = WordWorker.updateText(jsonObject.get("title") + "\n" + jsonObject.get("text").toString());
+
+                        }
+                    }catch (Exception e){
+                        text = WordWorker.updateText(jsonObject.get("text").toString());
+
+                    }
+
+                    addToTable3(tablePublication, text, jsonObject.get("uri").toString(), jsonObject.get("likes").toString(), fontFraze, false);
                 }
 
                 document.add(tablePublication);
