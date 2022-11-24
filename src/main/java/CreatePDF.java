@@ -588,7 +588,7 @@ public class CreatePDF {
             }
             if (postsContentLikes.length()> 0) {
                 title = String.format("Таблица %s Топ-%s публикаций по количеству лайков", tableCount, postsContentLikes.length());
-                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c = new Chunk(title, Foпубликаций по количеству лайковntFactory.getFont(fontUrlBold, encoding, true, 14.0F));
                 c.setGenericTag(title);
                 paragraphPublication = new Paragraph(c);
 
@@ -599,7 +599,7 @@ public class CreatePDF {
                 tablePublication.setLockedWidth(true);
                 document.add(new Phrase(""));
                 ++tableCount;
-                addToTable3(tablePublication, "Публикация", "URL", "Резонанс", fontFrazeBOLD);
+                addToTable3(tablePublication, "Публикация", "URL", "Лайки", fontFrazeBOLD);
                 var80 = postsContentLikes.iterator();
 
                 while (var80.hasNext()) {
