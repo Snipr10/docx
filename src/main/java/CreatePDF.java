@@ -599,7 +599,7 @@ public class CreatePDF {
                 tablePublication.setLockedWidth(true);
                 document.add(new Phrase(""));
                 ++tableCount;
-                addToTable3(tablePublication, "Публикация", "URL", "Резонанс", fontFrazeBOLD);
+                addToTable3(tablePublication, "Публикация", "URL", "Лайки", fontFrazeBOLD);
                 var80 = postsContentLikes.iterator();
 
                 while (var80.hasNext()) {

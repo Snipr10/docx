@@ -695,7 +695,7 @@ class WordWorker {
 
                     tableTop10CommentRow.addNewTableCell();
                     XWPFRun run21 = tableTop10CommentRow.getCell(2).getParagraphs().get(0).createRun();
-                    run21.setText("Резонанс");
+                    run21.setText("Лайки");
                     run21.setBold(true);
 
                     for (Object o : postsContentLikes) {
