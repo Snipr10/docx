@@ -548,7 +548,7 @@ public class CreatePDF {
         }
         if((likesComment !=0) || (likesPosts !=0 )) {
             document.newPage();
-            title = "Ключевые публикации и комментарии";
+            title = "Ключевые публикации";
             c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 22.0F));
             c.setGenericTag(title);
             Paragraph paragraphPublication = new Paragraph(c);

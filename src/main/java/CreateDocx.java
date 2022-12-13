@@ -624,7 +624,7 @@ class WordWorker {
                 paragraphConfigKeysP.setBold(true);
                 paragraphConfigKeysP.setFontFamily("Arial");
                 paragraphConfigKeysP.setText(
-                        "Ключевые публикации и комментарии"
+                        "Ключевые публикации"
                 );
                 entityOnPage =0;
                 if (likesPosts == 0) {
