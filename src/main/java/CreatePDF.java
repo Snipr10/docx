@@ -82,7 +82,7 @@ public class CreatePDF {
     public CreatePDF() throws IOException, DocumentException {
     }
 
-    public static String createPDF(String docName, String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year, JSONArray postsContentLikes) throws DocumentException, IOException, ParseException, FontFormatException {
+    public static String createPDF(String docName, String type, String name, String date, DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat, JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts, JSONArray postsContent, JSONArray commentContent, int first_month, int first_year, JSONArray postsContentLikes, int cityAll) throws DocumentException, IOException, ParseException, FontFormatException {
         DefaultFontMapper mapper = new DefaultFontMapper();
         mapper.insertDirectory(fontUrl);
         BaseFontParameters pp = mapper.getBaseFontParameters("Arial Unicode MS");
@@ -359,35 +359,44 @@ public class CreatePDF {
         sexJson = (JSONObject)((JSONObject)sex.get("additional_data")).get("sex");
         String[] categoriesCity = new String[0];
         Double[] valuesACity = new Double[0];
+        JSONArray JsoncityUpdate = new JSONArray(jsonCity.toString());
+        int res = 0;
+        for ( Object o1 :JsoncityUpdate){
+            res += Integer.parseInt( (String) (((JSONObject)o1).get("users")));
+        }
+        JSONObject json1_city = new JSONObject();
+        json1_city.put("city", "Другие города");
+        json1_city.put("users", Integer.toString(cityAll-res));
+        JsoncityUpdate.put(json1_city);
+
         int i = 0;
         int count10 = 0;
 
         JSONObject jsonObject;
         Iterator var65;
         Object o;
-        for(var65 = jsonCity.iterator(); var65.hasNext(); ++i) {
+        for(var65 = JsoncityUpdate.iterator(); var65.hasNext(); ++i) {
             o = var65.next();
             jsonObject = (JSONObject)o;
-            if (i == 10) {
-                break;
-            }
 
             count10 += Integer.parseInt(jsonObject.get("users").toString());
         }
 
         double valueCity;
-        for(var65 = jsonCity.iterator(); var65.hasNext(); valuesACity = (Double[])WordWorker.append(valuesACity, valueCity)) {
+        for(var65 = JsoncityUpdate.iterator();
+            var65.hasNext();
+            ) {
             o = var65.next();
-            if (categoriesCity.length >= 10) {
+            if (categoriesCity.length >= 11) {
                 break;
             }
 
             jsonObject = (JSONObject)o;
             valueCity = (double)Math.round(Double.parseDouble(jsonObject.get("users").toString()) * 100.0D / (double)count10 * 100.0D) / 100.0D;
             if (valueCity < 1.0D) {
-                break;
+                continue;
             }
-
+            valuesACity = (Double[])WordWorker.append(valuesACity, valueCity);
             categoriesCity = (String[])((String[])WordWorker.append(categoriesCity, jsonObject.get("city")));
         }
 
@@ -588,7 +597,7 @@ public class CreatePDF {
             }
             if (postsContentLikes.length()> 0) {
                 title = String.format("Таблица %s Топ-%s публикаций по количеству лайков", tableCount, postsContentLikes.length());
-                c = new Chunk(title, Foпубликаций по количеству лайковntFactory.getFont(fontUrlBold, encoding, true, 14.0F));
+                c = new Chunk(title, FontFactory.getFont(fontUrlBold, encoding, true, 14.0F));
                 c.setGenericTag(title);
                 paragraphPublication = new Paragraph(c);
 

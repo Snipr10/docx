@@ -51,7 +51,7 @@ class WordWorker {
                                  DataForDocx data, JSONObject jsonPosts, JSONObject jsonComments, JSONObject stat,
                                  JSONObject sex, JSONObject age, JSONObject usersJson, JSONArray jsonCity, JSONArray posts,
                                  JSONArray postsContent,JSONArray commentContent, int first_month, int first_year,
-                                         JSONArray postsContentLikes
+                                         JSONArray postsContentLikes, int cityAll
                                          ) {
         int users = Integer.parseInt(usersJson.get("count").toString());
 
@@ -424,28 +424,36 @@ class WordWorker {
             ParseData auditData = getWeekData(type, (JSONArray) (stat).get("graph_data"), first_month, first_year);
             JSONObject sexJson= (JSONObject) ((JSONObject)sex.get("additional_data")).get("sex");
             String[] categoriesCity = new String[]{};
+
             Double[] valuesACity  = new Double[]{};
+            JSONArray JsoncityUpdate = new JSONArray(jsonCity.toString());
+            int res = 0;
+            for ( Object o1 :JsoncityUpdate){
+                res += Integer.parseInt( (String) (((JSONObject)o1).get("users")));
+            }
+            JSONObject json1_city = new JSONObject();
+            json1_city.put("city", "Другие города");
+            json1_city.put("users", Integer.toString(cityAll-res));
+            JsoncityUpdate.put(json1_city);
+
             double valueCity;
             int i = 0;
             int count10 = 0;
             JSONObject jsonObject;
-            for (Object o :  jsonCity) {
+            for (Object o :  JsoncityUpdate) {
                 jsonObject = (JSONObject) o;
-                if (i == 10) {
-                    break;
-                }
                 count10 += Integer.parseInt(jsonObject.get("users").toString());
                 i ++;
             }
-            for (Object o :  jsonCity) {
-                if (categoriesCity.length >= 10) {
+            for (Object o :  JsoncityUpdate) {
+                if (categoriesCity.length >= 11) {
                     break;
                 }
 
                 jsonObject = (JSONObject) o;
                 valueCity= Math.round(Double.parseDouble( jsonObject.get("users").toString())*100.00/count10 * 100.00) / 100.00;
                 if (valueCity < 1) {
-                    break;
+                    continue;
                 }
                 categoriesCity = (String[]) append(categoriesCity, jsonObject.get("city"));
                 valuesACity = append(valuesACity, valueCity );

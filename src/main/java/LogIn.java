@@ -162,6 +162,7 @@ public class LogIn implements HttpHandler {
         JSONObject sex = getStats("sex");
         JSONObject age = getAge();
         JSONArray jsonCity = getCity();
+        int cityAll = getCityReport();
         JSONObject usersJson = getUsers();
         String nameThread = getNameThread();
         String fullName = convertCyrilic(nameThread) + " " + LocalDateTime.now()
@@ -177,14 +178,14 @@ public class LogIn implements HttpHandler {
         if (format.equals("pdf")) {
             fullName = CreatePDF.createPDF(fullName, type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                    first_month, first_year, postsContentLikes
+                    first_month, first_year, postsContentLikes, cityAll
             );
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
                     "application/pdf");
         } else {
             XWPFDocument docx = WordWorker.createDoc(type, nameThread, String.format("%s%s года - %s %s года", dateFromString, yearFrom, dateToString, year),
                     data, jsonPosts, jsonComments, stat, sex, age, usersJson, jsonCity, posts, postsContent, commentContent,
-                    first_month, first_year, postsContentLikes
+                    first_month, first_year, postsContentLikes, cityAll
             );
 
             fullName = fullName + ".docx";
@@ -328,7 +329,7 @@ public class LogIn implements HttpHandler {
     }
 
     private JSONObject getUsers() throws IOException {
-        URL url = new URL(DOMAIN + "/component/socparser/stats/userlinks ");
+        URL url = new URL(DOMAIN + "/component/socparser/stats/userLinksByDate ");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -412,6 +413,35 @@ public class LogIn implements HttpHandler {
         return new JSONArray(res);
 
     }
+
+    private int getCityReport() throws IOException {
+        URL url = new URL(DOMAIN + "/component/socparser/thread/getcityreport");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json; utf-8");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setDoOutput(true);
+        String jsonInputString = String.format("{\"thread_id\": \"%s\", \"city\": \"Москва\"}",
+                thread_id, dateFrom, dateTo);
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+            os.flush();
+        }
+        String res = "";
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            res += response.toString();
+        }
+        JSONObject cityReport = new JSONObject(res);
+        return (Integer) cityReport.get("users_city") +(Integer)cityReport.get("users_undefined")+ (Integer)cityReport.get("other_cities_users");
+    }
+
 
     private JSONObject getStats(String type) throws IOException {
         URL url = new URL(DOMAIN + "/component/socparser/stats");
