@@ -586,13 +586,15 @@ public class CreatePDF {
 
 
                 while (var80.hasNext()) {
-                    o = var80.next();
-                    jsonObject = (JSONObject) o;
-                    text = WordWorker.updateText(jsonObject.get("text").toString());
-
-                    addToTable3(tablePublication, text, jsonObject.get("uri").toString(), WordWorker.res(jsonObject), fontFraze, false);
+                    try {
+                        o = var80.next();
+                        jsonObject = (JSONObject) o;
+                        text = WordWorker.updateText(jsonObject.get("text").toString());
+                        addToTable3(tablePublication, text, jsonObject.get("uri").toString(), WordWorker.res(jsonObject), fontFraze, false);
+                }  catch(Exception e){
+                    System.out.println("can not add comment");
                 }
-
+            }
                 document.add(tablePublication);
             }
             if (postsContentLikes.length()> 0) {
