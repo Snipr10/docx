@@ -730,66 +730,129 @@ public class CreatePDF {
         AddBar(categories, valuesA, writer, diagramY, false);
     }
     private static void AddBar(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY, boolean decimal) {
-        DefaultCategoryDataset defaultCategoryDataset = new DefaultCategoryDataset();
+//        DefaultCategoryDataset defaultCategoryDataset = new DefaultCategoryDataset();
+//
+//        for(int i = 0; i < categories.length; ++i) {
+//            defaultCategoryDataset.setValue(valuesA[i], "", categories[i] + "янв 1фЭsя   sad");
+//        }
+//
+//        PdfContentByte pdfContentByte = writer.getDirectContent();
+//        int width = 500;
+//        int height = 208;
+//        PdfTemplate pdfTemplate = pdfContentByte.createTemplate((float)width, (float)height);
+//        Graphics2D graphics2d = pdfTemplate.createGraphics((float)width, (float)height, new DefaultFontMapper());
+//        graphics2d.setColor(Color.BLACK);
+//        Rectangle2D rectangle2d = new java.awt.geom.Rectangle2D.Double(0.0D, 0.0D, (double)width, (double)height);
+//        JFreeChart jFreeChart = ChartFactory.createBarChart("", "", "", defaultCategoryDataset, PlotOrientation.VERTICAL, false, false, false);
+//        jFreeChart.getPlot().setBackgroundPaint(Color.WHITE);
+//        CategoryPlot plot = jFreeChart.getCategoryPlot();
+//        plot.setOutlinePaint((Paint)null);
+//        plot.setRangeGridlinePaint(WhiteColor);
+//        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+//        plot.setDomainGridlinesVisible(true);
+//        plot.setDomainGridlinePaint(WhiteColor);
+//        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+//
+//        CategoryAxis categoryAxis = plot.getDomainAxis();
+//        categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
+//        categoryAxis.setAxisLinePaint(Color.BLACK);
+//        categoryAxis.setTickLabelPaint(Color.BLACK);
+//        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+//
+//
+//        ValueAxis valueAxis = plot.getRangeAxis();
+//        valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
+//        valueAxis.setTickLabelPaint(Color.BLACK);
+//        valueAxis.setAxisLinePaint(Color.BLACK);
+//
+//        BarRenderer render = (BarRenderer)plot.getRenderer();
+//        render.setSeriesPaint(0, YellowColor);
+//        render.setMaximumBarWidth(0.09D);
+//        render.setBarPainter(new StandardBarPainter());
+//        if (decimal) {
+//            render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
+//        } else {
+//            DecimalFormat labelFormat = new DecimalFormat("##");
+//            plot.getRenderer().setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator("{2}", labelFormat));
+//        }
+//        render.setSeriesItemLabelsVisible(1, true);
+//        render.setBaseItemLabelsVisible(true);
+//        render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 4));
+//        jFreeChart.draw(graphics2d, rectangle2d);
+//        graphics2d.dispose();
+//        pdfContentByte.addTemplate(pdfTemplate, 40.0F, (float)diagramY);
+
+        DefaultCategoryDataset result = new DefaultCategoryDataset();
 
         for(int i = 0; i < categories.length; ++i) {
-            defaultCategoryDataset.setValue(valuesA[i], "", categories[i]);
+            result.setValue(valuesA[i], "", categories[i]);
         }
 
-        PdfContentByte pdfContentByte = writer.getDirectContent();
-        int width = 500;
-        int height = 208;
-        PdfTemplate pdfTemplate = pdfContentByte.createTemplate((float)width, (float)height);
-        Graphics2D graphics2d = pdfTemplate.createGraphics((float)width, (float)height, new DefaultFontMapper());
-        graphics2d.setColor(Color.BLACK);
-        Rectangle2D rectangle2d = new java.awt.geom.Rectangle2D.Double(0.0D, 0.0D, (double)width, (double)height);
-        JFreeChart jFreeChart = ChartFactory.createBarChart("", "", "", defaultCategoryDataset, PlotOrientation.VERTICAL, false, false, false);
-        jFreeChart.getPlot().setBackgroundPaint(Color.WHITE);
-        CategoryPlot plot = jFreeChart.getCategoryPlot();
-        plot.setOutlinePaint((Paint)null);
-        plot.setRangeGridlinePaint(WhiteColor);
-//        plot.setRangeGridlinePaint(Color.BLACK);
-        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
-//        plot.setRangeGridlineStroke(new BasicStroke(0.1f));
-        plot.setDomainGridlinesVisible(true);
-        plot.setDomainGridlinePaint(WhiteColor);
-        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+        JFreeChart chart = ChartFactory.createStackedBarChart("", "%", "", result, PlotOrientation.VERTICAL, true, false, false);
+        LegendTitle legend = chart.getLegend();
+        legend.setItemFont(new java.awt.Font("Arial", 0, 5));
+        legend.setBorder(0.0D, 0.0D, 0.0D, 0.0D);
+        GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
+        KeyToGroupMap map = new KeyToGroupMap("G1");
+        map.mapKeyToGroup("Сми", "G1");
+        renderer.setSeriesToGroupMap(map);
+        renderer.setItemMargin(0.0D);
+        renderer.setSeriesPaint(0, YellowColor);
+        renderer.setMaximumBarWidth(0.09D);
+        renderer.setBarPainter(new StandardBarPainter());
 
-        CategoryAxis categoryAxis = plot.getDomainAxis();
-//        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-
-        categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-//        categoryAxis.setAxisLinePaint(Color.WHITE);
-        categoryAxis.setAxisLinePaint(Color.BLACK);
-
-        categoryAxis.setTickLabelPaint(Color.BLACK);
-        ValueAxis valueAxis = plot.getRangeAxis();
-        valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
-        valueAxis.setTickLabelPaint(Color.BLACK);
-//        valueAxis.setAxisLinePaint(Color.WHITE);
-        valueAxis.setAxisLinePaint(Color.BLACK);
-
+        renderer.setGradientPaintTransformer(new StandardGradientPaintTransformer(GradientPaintTransformType.HORIZONTAL));
+        SubCategoryAxis domainAxis = new SubCategoryAxis("");
+        domainAxis.setCategoryMargin(0.05D);
+        chart.getPlot().setBackgroundPaint(Color.WHITE);
+        CategoryPlot plot = (CategoryPlot)chart.getPlot();
+        plot.setDomainAxis(domainAxis);
+        plot.setRenderer(renderer);
         BarRenderer render = (BarRenderer)plot.getRenderer();
-        render.setSeriesPaint(0, YellowColor);
-//        render.setMaximumBarWidth(0.05D);
-        render.setMaximumBarWidth(0.09D);
-        render.setBarPainter(new StandardBarPainter());
+        render.setMaximumBarWidth(0.05D);
+
         if (decimal) {
             render.setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator());
         } else {
             DecimalFormat labelFormat = new DecimalFormat("##");
             plot.getRenderer().setSeriesItemLabelGenerator(0, new StandardCategoryItemLabelGenerator("{2}", labelFormat));
         }
+
         render.setSeriesItemLabelsVisible(1, true);
         render.setBaseItemLabelsVisible(true);
-//        render.setBaseSeriesVisible(true);
-        render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 5));
-//        ItemLabelPosition position = new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.TOP_CENTER, -1.57D);
-//        render.setBasePositiveItemLabelPosition(position);
-        jFreeChart.draw(graphics2d, rectangle2d);
+        render.setBaseSeriesVisible(true);
+        render.setBaseItemLabelFont(new java.awt.Font("Arial", 0, 4));
+        render.setBasePositiveItemLabelPosition(new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER, TextAnchor.CENTER, 0.0));
+        plot.setOutlinePaint((Paint)null);
+
+        plot.setRangeGridlinePaint(WhiteColor);
+        plot.setRangeGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 1.0f));
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(WhiteColor);
+        plot.setDomainGridlineStroke(new BasicStroke(0.01f,BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 0.0f, null, 0.0f));
+
+        CategoryAxis categoryAxis = plot.getDomainAxis();
+        categoryAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
+        categoryAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
+        categoryAxis.setAxisLinePaint(Color.BLACK);
+        categoryAxis.setTickLabelPaint(Color.BLACK);
+        ValueAxis valueAxis = plot.getRangeAxis();
+        valueAxis.setTickLabelFont(new java.awt.Font("Arial", 0, 5));
+        valueAxis.setTickLabelPaint(Color.BLACK);
+        valueAxis.setAxisLinePaint(Color.BLACK);
+        PdfContentByte pdfContentByte = writer.getDirectContent();
+        int width = 500;
+        int height = 208;
+        PdfTemplate pdfTemplate = pdfContentByte.createTemplate((float)width, (float)height);
+        Graphics2D graphics2d = pdfTemplate.createGraphics((float)width, (float)height, fontMapper);
+        Rectangle2D rectangle2d = new java.awt.geom.Rectangle2D.Double(0.0D, 0.0D, (double)width, (double)height);
+        chart.draw(graphics2d, rectangle2d);
         graphics2d.dispose();
         pdfContentByte.addTemplate(pdfTemplate, 40.0F, (float)diagramY);
+
+
+
     }
 
     private static void addPie(String[] categories, Double[] valuesA, PdfWriter writer, int diagramY) throws FontFormatException, DocumentException, IOException {
